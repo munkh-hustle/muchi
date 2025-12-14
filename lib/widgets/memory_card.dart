@@ -29,9 +29,8 @@ class MemoryCard extends StatelessWidget {
         height: 140,
         decoration: BoxDecoration(
           color: memory.isMilestone
-              ? const Color(
-                  0xFFFFE4E1) // Slightly different pink for milestones
-              : const Color(0xFFFFB6C1), // Pink background
+              ? const Color(0xFFFFE4E1)
+              : const Color(0xFFFFB6C1),
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
@@ -43,7 +42,7 @@ class MemoryCard extends StatelessWidget {
           ],
           border: Border.all(
             color: memory.isMilestone
-                ? const Color(0xFFFFD700) // Golden border for milestones
+                ? const Color(0xFFFFD700)
                 : const Color(0xFFFF8E8E).withOpacity(0.8),
             width: 2,
           ),
@@ -74,10 +73,14 @@ class MemoryCard extends StatelessWidget {
               ),
             ),
 
-            // Top-left date with white background
+            // Top-left date with white background - REMOVED
+
+            // Top-right year - REMOVED
+
+            // Bottom-right date (moved from top-left)
             Positioned(
-              top: 16,
-              left: 16,
+              bottom: 16,
+              right: 16,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -93,66 +96,12 @@ class MemoryCard extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  DateFormat('MMM dd').format(memory.date),
+                  DateFormat('MMM dd, yyyy').format(memory.date),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF333333),
                   ),
-                ),
-              ),
-            ),
-
-            // Top-right year
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Text(
-                DateFormat('yyyy').format(memory.date),
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black26,
-                      blurRadius: 3,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Bottom-left mood emoji
-            Positioned(
-              bottom: 16,
-              left: 16,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  getMoodDisplay(memory.mood),
-                  style: const TextStyle(fontSize: 22),
-                ),
-              ),
-            ),
-
-            // Bottom-right weather emoji
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  getWeatherDisplay(memory.weather),
-                  style: const TextStyle(fontSize: 22),
                 ),
               ),
             ),
@@ -168,8 +117,8 @@ class MemoryCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
+                        const Color(0xFFD4AF37),
                         const Color(0xFFFFD700),
-                        const Color(0xFFFFEC8B),
                       ],
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,

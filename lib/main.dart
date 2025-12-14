@@ -7,10 +7,13 @@
 // │   ├── add_edit_memory_screen.dart
 // │   ├── timeline_screen.dart
 // │   └── memory_detail_screen.dart
+// │   └── settings_screen.dart
 // ├── widgets/
 // │   └── memory_card.dart
 // └── utils/
 //     └── helpers.dart
+// └── services/
+//     └── data_service.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/screens/timeline_screen.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
@@ -14,12 +15,48 @@ class TimelineScreen extends StatefulWidget {
 }
 
 class _TimelineScreenState extends State<TimelineScreen> {
-  int _selectedMonth = 0;
-  final List<String> _months = [
-    'December 2024',
-    'January 2025',
-    'February 2025'
-  ];
+  late List<String> _months;
+  late int _selectedMonth = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateMonthsList();
+  }
+
+  void _generateMonthsList() {
+    if (MemoryData.memories.isEmpty) {
+      _months = ['No memories'];
+      return;
+    }
+
+    // Get all unique month-year combinations from memories
+    final Set<String> monthSet = {};
+    for (final memory in MemoryData.memories) {
+      final monthYear = DateFormat('MMMM yyyy').format(memory.date);
+      monthSet.add(monthYear);
+    }
+
+    // Convert to list and sort by date (newest first)
+    _months = monthSet.toList();
+    _months.sort((a, b) {
+      final dateA = DateFormat('MMMM yyyy').parse(a);
+      final dateB = DateFormat('MMMM yyyy').parse(b);
+      return dateB.compareTo(dateA);
+    });
+
+    // Update selected month if needed
+    if (_selectedMonth >= _months.length) {
+      _selectedMonth = 0;
+    }
+  }
+
+// Call this method whenever memories change
+  void _refreshMonths() {
+    setState(() {
+      _generateMonthsList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +150,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             },
           ),
           Text(
-            _months[_selectedMonth],
+            _months.isEmpty ? 'No memories' : _months[_selectedMonth],
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -136,17 +173,8 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   Widget _buildTimeline() {
-    final filteredMemories = MemoryData.memories.where((memory) {
-      if (_selectedMonth == 0) return memory.date.month == 12;
-      if (_selectedMonth == 1) return memory.date.month == 1;
-      return memory.date.month == 2;
-    }).toList();
-
-    // Sort by date (newest first)
-    filteredMemories.sort((a, b) => b.date.compareTo(a.date));
-
-    // If no memories for selected month
-    if (filteredMemories.isEmpty) {
+    if (_months.isEmpty || _months.first == 'No memories') {
+      // Show empty state
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -158,7 +186,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No memories for ${_months[_selectedMonth]}',
+              'No memories yet',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -166,7 +194,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap the + button to add one!',
+              'Tap the + button to add your first memory!',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade400,
@@ -176,6 +204,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
         ),
       );
     }
+
+    final selectedMonthYear = _months[_selectedMonth];
+    final selectedDate = DateFormat('MMMM yyyy').parse(selectedMonthYear);
+
+    final filteredMemories = MemoryData.memories.where((memory) {
+      final memoryMonthYear = DateFormat('MMMM yyyy').format(memory.date);
+      return memoryMonthYear == selectedMonthYear;
+    }).toList();
 
     return ListView.builder(
       padding: const EdgeInsets.only(top: 16, bottom: 100),
@@ -202,7 +238,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
               ),
             ).then((refresh) {
               if (refresh == true) {
-                setState(() {}); // Refresh the timeline
+                setState(() {
+                  _refreshMonths(); // Refresh the month list
+                });
               }
             });
           },
@@ -290,7 +328,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
     ).then((refresh) {
       if (refresh == true) {
-        setState(() {}); // Refresh the timeline
+        setState(() {
+          _refreshMonths(); // Refresh the month list
+        });
       }
     });
   }
