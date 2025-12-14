@@ -64,11 +64,11 @@ class SettingsScreen extends StatelessWidget {
             children: [
               _buildInfoItem(
                 'Version',
-                '1.0.2',
+                '1.0.5',
               ),
               _buildInfoItem(
                 'Developed with',
-                '❤️ for loved ones',
+                '❤️ for Chimdee',
               ),
               _buildInfoItem(
                 'Memories Count',
@@ -84,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'LoveLines',
+                  '🐇Muunu & 🐈‍⬛Chimdee',
                   style: TextStyle(
                     fontSize: 18,
                     color: Colors.grey.shade600,
@@ -93,7 +93,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Keep your love story alive 💖',
+                  'Олон олон дурсамж бүтээе хэхэ💖',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade500,

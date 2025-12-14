@@ -1,7 +1,7 @@
 name: muchi
 description: "for my loved ones."
 publish_to: 'none'
-version: 1.0.4+1
+version: 1.0.5+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -25,6 +25,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/MuChi.png"
+  adaptive_icon_background: "#FFB6C1"
+  adaptive_icon_foreground: "assets/icons/MuChi.png"

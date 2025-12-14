@@ -108,9 +108,9 @@ class _TimelineScreenState extends State<TimelineScreen> {
             },
           ),
           Text(
-            'LoveLines',
+            '🐇Muunu & 🐈‍⬛Chimdee',
             style: GoogleFonts.dancingScript(
-              fontSize: 32,
+              fontSize: 26,
               fontWeight: FontWeight.w700,
               color: const Color(0xFFFF6B6B),
             ),
@@ -426,7 +426,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'LoveLines • Our Story',
+                  'MuChi • Our Story',
                   style: GoogleFonts.dancingScript(
                     fontSize: 18,
                     color: Colors.grey.shade600,
