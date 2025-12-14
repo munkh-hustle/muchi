@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
+import 'package:muchi/screens/settings_screen.dart';
 import 'package:muchi/widgets/memory_card.dart';
 
 class TimelineScreen extends StatefulWidget {
@@ -374,6 +375,11 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 color: Colors.grey,
                 onTap: () {
                   Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SettingsScreen()),
+                  );
                 },
               ),
               const Spacer(),
