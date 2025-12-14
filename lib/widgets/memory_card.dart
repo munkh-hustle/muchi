@@ -7,18 +7,23 @@ class MemoryCard extends StatelessWidget {
   final Memory memory;
   final int index;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const MemoryCard({
     super.key,
     required this.memory,
     required this.index,
     required this.onTap,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
+      onLongPress: () => _showOptionsDialog(context),
       child: Container(
         margin: const EdgeInsets.only(bottom: 20),
         child: Stack(
@@ -291,6 +296,36 @@ class MemoryCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showOptionsDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit, color: Color(0xFFFF6B6B)),
+              title: const Text('Edit Memory'),
+              onTap: () {
+                Navigator.pop(context);
+                onEdit?.call();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Memory'),
+              onTap: () {
+                Navigator.pop(context);
+                onDelete?.call();
+              },
             ),
           ],
         ),

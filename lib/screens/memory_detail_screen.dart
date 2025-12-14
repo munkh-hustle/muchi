@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
@@ -124,6 +125,33 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen> {
               ),
               onPressed: () => Navigator.pop(context),
             ),
+            actions: [
+              IconButton(
+                icon: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          AddEditMemoryScreen(memory: widget.memory),
+                      fullscreenDialog: true,
+                    ),
+                  ).then((refresh) {
+                    if (refresh == true) {
+                      setState(() {}); // Refresh details
+                    }
+                  });
+                },
+              ),
+            ],
           ),
           // ... rest of the code remains the same
           SliverToBoxAdapter(

@@ -83,4 +83,28 @@ class MemoryData {
           'Тэр сарнайг хүлээж авахдаа зүрх минь маш хурдан цохилж байсан.',
     ),
   ];
+  // ADD: Add a new memory
+  static void addMemory(Memory memory) {
+    memories.add(memory);
+    memories.sort((a, b) => b.date.compareTo(a.date)); // Sort by newest first
+  }
+
+  // DELETE: Remove a memory
+  static void deleteMemory(Memory memory) {
+    memories.remove(memory);
+  }
+
+  // UPDATE: Update an existing memory
+  static void updateMemory(Memory oldMemory, Memory newMemory) {
+    final index = memories.indexOf(oldMemory);
+    if (index != -1) {
+      memories[index] = newMemory;
+      memories.sort((a, b) => b.date.compareTo(a.date));
+    }
+  }
+
+  // GET: Get memory by index
+  static Memory getMemory(int index) {
+    return memories[index];
+  }
 }

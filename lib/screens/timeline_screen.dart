@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/data/memory_data.dart';
+import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
 import 'package:muchi/widgets/memory_card.dart';
 
@@ -133,12 +134,46 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
+  // Replace the entire _buildTimeline() method with this:
+
   Widget _buildTimeline() {
     final filteredMemories = MemoryData.memories.where((memory) {
       if (_selectedMonth == 0) return memory.date.month == 12;
       if (_selectedMonth == 1) return memory.date.month == 1;
       return memory.date.month == 2;
     }).toList();
+
+    // If no memories for selected month
+    if (filteredMemories.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.photo_album,
+              size: 80,
+              color: Colors.grey.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No memories for ${_months[_selectedMonth]}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Tap the + button to add one!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -153,6 +188,52 @@ class _TimelineScreenState extends State<TimelineScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => MemoryDetailScreen(memory: memory),
+              ),
+            );
+          },
+          onEdit: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddEditMemoryScreen(memory: memory),
+                fullscreenDialog: true,
+              ),
+            ).then((refresh) {
+              if (refresh == true) {
+                setState(() {}); // Refresh the timeline
+              }
+            });
+          },
+          onDelete: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Delete Memory'),
+                content:
+                    const Text('Are you sure you want to delete this memory?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      MemoryData.deleteMemory(memory);
+                      setState(() {});
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Memory deleted!'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    child: const Text('Delete'),
+                  ),
+                ],
               ),
             );
           },
@@ -199,68 +280,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
   }
 
   void _showAddMemoryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            'Add New Memory',
-            style: GoogleFonts.dancingScript(
-              fontSize: 24,
-              color: const Color(0xFFFF6B6B),
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Memory Title',
-                  labelStyle: const TextStyle(color: Color(0xFFFFB6C1)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFFFB6C1)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Date',
-                  labelStyle: const TextStyle(color: Color(0xFFFFB6C1)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFFFB6C1)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF6B6B),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text('Add', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddEditMemoryScreen(),
+        fullscreenDialog: true,
+      ),
+    ).then((refresh) {
+      if (refresh == true) {
+        setState(() {}); // Refresh the timeline
+      }
+    });
   }
 
   void _showBottomMenu(BuildContext context) {
