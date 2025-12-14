@@ -3,11 +3,10 @@ class Memory {
   final String title;
   final List<String> highlights;
   final String fullStory;
-  final List<String> photos;
   final String location;
   final int loveRating;
-  final String mood;
-  final String weather;
+  final String mood; // Now stores emoji like '😊'
+  final String weather; // Now stores emoji like '☀️'
   final bool isMilestone;
   final List<String> tags;
   final String secretNote;
@@ -17,11 +16,10 @@ class Memory {
     required this.title,
     required this.highlights,
     required this.fullStory,
-    required this.photos,
     required this.location,
     this.loveRating = 5,
-    this.mood = 'happy',
-    this.weather = 'sunny',
+    this.mood = '😊',
+    this.weather = '☀️',
     this.isMilestone = false,
     this.tags = const [],
     this.secretNote = '',

@@ -25,278 +25,196 @@ class MemoryCard extends StatelessWidget {
       onTap: onTap,
       onLongPress: () => _showOptionsDialog(context),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
+        margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        height: 140,
+        decoration: BoxDecoration(
+          color: memory.isMilestone
+              ? const Color(
+                  0xFFFFE4E1) // Slightly different pink for milestones
+              : const Color(0xFFFFB6C1), // Pink background
+          borderRadius: BorderRadius.circular(25),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pink.withOpacity(0.3),
+              blurRadius: 15,
+              spreadRadius: 3,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: memory.isMilestone
+                ? const Color(0xFFFFD700) // Golden border for milestones
+                : const Color(0xFFFF8E8E).withOpacity(0.8),
+            width: 2,
+          ),
+        ),
         child: Stack(
           children: [
-            // Timeline line
-            Positioned(
-              left: 30,
-              top: 0,
-              bottom: 0,
+            // White heart in the middle
+            Center(
               child: Container(
-                width: 2,
-                color: const Color(0xFFFFB6C1).withOpacity(0.3),
-              ),
-            ),
-
-            // Heart connector
-            Positioned(
-              left: 20,
-              top: 40,
-              child: Container(
-                width: 24,
-                height: 24,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  color: memory.isMilestone
-                      ? const Color(0xFFD4AF37)
-                      : const Color(0xFFFF6B6B),
+                  color: Colors.white,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: memory.isMilestone
-                          ? const Color(0xFFD4AF37).withOpacity(0.5)
-                          : const Color(0xFFFF6B6B).withOpacity(0.5),
-                      blurRadius: 8,
-                      spreadRadius: 2,
+                      color: Colors.white.withOpacity(0.5),
+                      blurRadius: 15,
+                      spreadRadius: 5,
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.favorite,
-                  size: 12,
-                  color: Colors.white,
+                  color: const Color(0xFFFF6B6B),
+                  size: 32,
                 ),
               ),
             ),
 
-            // Memory Card
-            Container(
-              margin: const EdgeInsets.only(left: 50),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.pink.shade100.withOpacity(0.3),
-                    blurRadius: 15,
-                    spreadRadius: 1,
+            // Top-left date with white background
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 5,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  DateFormat('MMM dd').format(memory.date),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF333333),
                   ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: memory.isMilestone
-                            ? [
-                                const Color(0xFFD4AF37).withOpacity(0.1),
-                                const Color(0xFFFFD700).withOpacity(0.05),
-                              ]
-                            : [
-                                const Color(0xFFFFB6C1).withOpacity(0.1),
-                                const Color(0xFFFFE4E1).withOpacity(0.05),
-                              ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(20),
-                        topRight: Radius.circular(20),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.favorite,
-                              size: 16,
-                              color: memory.isMilestone
-                                  ? const Color(0xFFD4AF37)
-                                  : const Color(0xFFFF6B6B),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat('MMM dd, yyyy').format(memory.date),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: memory.isMilestone
-                                    ? const Color(0xFFD4AF37)
-                                    : const Color(0xFF333333),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              getWeatherIcon(memory.weather),
-                              size: 18,
-                              color: const Color(0xFF4FC3F7),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              getMoodIcon(memory.mood),
-                              color: const Color(0xFFFFB6C1),
-                              size: 18,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Title
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                    child: Text(
-                      memory.title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF333333),
-                      ),
-                    ),
-                  ),
-
-                  // Photo Preview
-                  if (memory.photos.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          height: 180,
-                          width: double.infinity,
-                          child: Container(
-                            color: Colors.pink.shade100,
-                            child: const Center(
-                              child: Icon(
-                                Icons.photo,
-                                size: 50,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Highlights
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ...memory.highlights.map((highlight) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Icon(
-                                      Icons.circle,
-                                      size: 8,
-                                      color: memory.isMilestone
-                                          ? const Color(0xFFD4AF37)
-                                          : const Color(0xFFFF6B6B),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      highlight,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        height: 1.4,
-                                        color: Color(0xFF555555),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )),
-                      ],
-                    ),
-                  ),
-
-                  // Footer
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade50,
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(20),
-                        bottomRight: Radius.circular(20),
-                      ),
-                      border: Border(
-                        top: BorderSide(
-                          color: Colors.grey.shade200,
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Location
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.location_on,
-                              size: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              memory.location,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Love Rating
-                        Row(
-                          children: List.generate(
-                            5,
-                            (index) => Padding(
-                              padding: const EdgeInsets.only(left: 2),
-                              child: Icon(
-                                Icons.favorite,
-                                size: 16,
-                                color: index < memory.loveRating
-                                    ? const Color(0xFFFF6B6B)
-                                    : Colors.grey.shade300,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Tags preview
-                        if (memory.tags.isNotEmpty)
-                          Text(
-                            memory.tags[0],
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: const Color(0xFFFF6B6B).withOpacity(0.8),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
+
+            // Top-right year
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Text(
+                DateFormat('yyyy').format(memory.date),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black26,
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom-left mood emoji
+            Positioned(
+              bottom: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  getMoodDisplay(memory.mood),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+
+            // Bottom-right weather emoji
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  getWeatherDisplay(memory.weather),
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+            ),
+
+            // Milestone indicator (top golden banner)
+            if (memory.isMilestone)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 30,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFFFFD700),
+                        const Color(0xFFFFEC8B),
+                      ],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.yellow.shade600.withOpacity(0.4),
+                        blurRadius: 8,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.star, size: 14, color: Colors.white),
+                        SizedBox(width: 6),
+                        Text(
+                          'MILESTONE',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 1.0,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black26,
+                                blurRadius: 3,
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Icon(Icons.star, size: 14, color: Colors.white),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

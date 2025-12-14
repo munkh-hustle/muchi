@@ -22,15 +22,10 @@ class MemoryData {
 Тэгээд тэр нэлээн нэрэлхүү байсан хэхэ. Ярьж байгаа нь гэхдээ аймаар таалагдсан. 
 Тэгээд лаптопыг нь аваад нөгөө өөрийнх нь өрөөнд нь орж үзлээ. 
 Тэгсэн гэнэт эвдрээд, гацаад унтарчихлаа...''',
-      photos: [
-        'assets/images/first_meet.png',
-        'assets/images/interstellar.png',
-        'assets/images/kiss.png',
-      ],
       location: 'His apartment',
       loveRating: 5,
-      mood: 'nervous',
-      weather: 'cloudy',
+      mood: '😰', // Updated to emoji
+      weather: '☁️', // Updated to emoji
       isMilestone: true,
       tags: ['#firstmeeting', '#nervous', '#specialnight'],
       secretNote: 'Тэр өдөр би үнэхээр их догдолж байсан... 💖',
@@ -48,13 +43,10 @@ class MemoryData {
 Бид хоёр олон зүйлийн тухай ярьж, хоорондоо ойлголцож эхэллээ. 
 Цай ууж байхдаа тэр надад хөгжим сонсгохоор шийдэж, 
 хамтдаа дуу сонсох нь бидний анхны нийтлэг хобби болж эхэлсэн юм.''',
-      photos: [
-        'assets/images/cafe_date.png',
-      ],
       location: 'Central Café',
       loveRating: 4,
-      mood: 'romantic',
-      weather: 'sunny',
+      mood: '😍', // Updated to emoji
+      weather: '☀️', // Updated to emoji
       tags: ['#date', '#romantic', '#cafe'],
       secretNote: 'Тэр надад хөгжмийн амт тааруулж өгсөн нь маш сайхан байсан.',
     ),
@@ -70,13 +62,10 @@ class MemoryData {
 Тэр улаан сарнай авчирч, бид хамтдаа орноо гоё чимэглэлээ. 
 Би хоол хийж, тэр дэлгүүрээс шоколад, дуртай ундаа авчирсан. 
 Өдрийн сүүлээр бид хамтдаа кино үзэж, урт яриа хийсэн.''',
-      photos: [
-        'assets/images/valentine.png',
-      ],
       location: 'Our Home',
       loveRating: 5,
-      mood: 'romantic',
-      weather: 'clear',
+      mood: '🥰', // Updated to emoji
+      weather: '☀️', // Updated to emoji
       isMilestone: true,
       tags: ['#valentine', '#romantic', '#first'],
       secretNote:

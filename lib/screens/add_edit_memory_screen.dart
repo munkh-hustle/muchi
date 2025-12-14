@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/data/memory_data.dart';
+import 'package:muchi/utils/helpers.dart';
 
 class AddEditMemoryScreen extends StatefulWidget {
   final Memory? memory; // null = add, not null = edit
@@ -26,20 +27,20 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
   final _secretNoteController = TextEditingController();
   final _highlightController = TextEditingController();
   final _tagController = TextEditingController();
+  final _moodController = TextEditingController();
+  final _weatherController = TextEditingController();
 
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   int _loveRating = 5;
-  String _mood = 'happy';
-  String _weather = 'sunny';
   bool _isMilestone = false;
   List<String> _highlights = [];
   List<String> _tags = [];
-  List<String> _photos = ['assets/images/default_memory.png']; // Default photo
 
   @override
   void initState() {
     super.initState();
 
+    // Set initial date based on widget parameters
     if (widget.memory != null) {
       // Edit mode
       final memory = widget.memory!;
@@ -49,15 +50,16 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
       _secretNoteController.text = memory.secretNote;
       _selectedDate = memory.date;
       _loveRating = memory.loveRating;
-      _mood = memory.mood;
-      _weather = memory.weather;
       _isMilestone = memory.isMilestone;
       _highlights = List.from(memory.highlights);
       _tags = List.from(memory.tags);
-      _photos = List.from(memory.photos);
-    } else if (widget.selectedDate != null) {
-      // Add mode with pre-selected date
-      _selectedDate = widget.selectedDate!;
+      _moodController.text = memory.mood;
+      _weatherController.text = memory.weather;
+    } else {
+      // Add mode
+      _selectedDate = widget.selectedDate ?? DateTime.now();
+      _moodController.text = '😊';
+      _weatherController.text = '☀️';
     }
   }
 
@@ -69,7 +71,9 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
     _secretNoteController.dispose();
     _highlightController.dispose();
     _tagController.dispose();
-    super.dispose();
+    _moodController.dispose();
+    _weatherController.dispose();
+    super.dispose(); // Only call super.dispose() once
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -214,7 +218,7 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Mood and Weather Selectors
+              // Mood and Weather with emoji input
               Row(
                 children: [
                   Expanded(
@@ -229,36 +233,39 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: _mood,
+                        TextFormField(
+                          controller: _moodController,
                           decoration: InputDecoration(
+                            hintText: 'Enter emoji (e.g., 😊)',
+                            prefixIcon: const Icon(Icons.emoji_emotions),
+                            suffixIcon: PopupMenuButton<String>(
+                              icon: const Icon(Icons.arrow_drop_down),
+                              onSelected: (value) {
+                                setState(() {
+                                  _moodController.text = value;
+                                });
+                              },
+                              itemBuilder: (context) {
+                                return getDefaultMoods().map((emoji) {
+                                  return PopupMenuItem<String>(
+                                    value: emoji,
+                                    child: Text(emoji),
+                                  );
+                                }).toList();
+                              },
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'happy',
-                              child: Text('Happy'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'romantic',
-                              child: Text('Romantic'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'nervous',
-                              child: Text('Nervous'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'excited',
-                              child: Text('Excited'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _mood = value!;
-                            });
-                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Default: ${getDefaultMoods().join(' ')}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       ],
                     ),
@@ -276,36 +283,39 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField<String>(
-                          value: _weather,
+                        TextFormField(
+                          controller: _weatherController,
                           decoration: InputDecoration(
+                            hintText: 'Enter emoji (e.g., ☀️)',
+                            prefixIcon: const Icon(Icons.wb_sunny),
+                            suffixIcon: PopupMenuButton<String>(
+                              icon: const Icon(Icons.arrow_drop_down),
+                              onSelected: (value) {
+                                setState(() {
+                                  _weatherController.text = value;
+                                });
+                              },
+                              itemBuilder: (context) {
+                                return getDefaultWeathers().map((emoji) {
+                                  return PopupMenuItem<String>(
+                                    value: emoji,
+                                    child: Text(emoji),
+                                  );
+                                }).toList();
+                              },
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'sunny',
-                              child: Text('Sunny'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'cloudy',
-                              child: Text('Cloudy'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'clear',
-                              child: Text('Clear'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'rainy',
-                              child: Text('Rainy'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _weather = value!;
-                            });
-                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Default: ${getDefaultWeathers().join(' ')}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
                         ),
                       ],
                     ),
@@ -519,11 +529,10 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                       title: _titleController.text,
                       highlights: _highlights,
                       fullStory: _fullStoryController.text,
-                      photos: _photos,
                       location: _locationController.text,
                       loveRating: _loveRating,
-                      mood: _mood,
-                      weather: _weather,
+                      mood: _moodController.text,
+                      weather: _weatherController.text,
                       isMilestone: _isMilestone,
                       tags: _tags,
                       secretNote: _secretNoteController.text,

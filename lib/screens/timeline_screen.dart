@@ -134,14 +134,15 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  // Replace the entire _buildTimeline() method with this:
-
   Widget _buildTimeline() {
     final filteredMemories = MemoryData.memories.where((memory) {
       if (_selectedMonth == 0) return memory.date.month == 12;
       if (_selectedMonth == 1) return memory.date.month == 1;
       return memory.date.month == 2;
     }).toList();
+
+    // Sort by date (newest first)
+    filteredMemories.sort((a, b) => b.date.compareTo(a.date));
 
     // If no memories for selected month
     if (filteredMemories.isEmpty) {
@@ -150,7 +151,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.photo_album,
+              Icons.heart_broken,
               size: 80,
               color: Colors.grey.shade300,
             ),
@@ -176,7 +177,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(top: 16, bottom: 100),
       itemCount: filteredMemories.length,
       itemBuilder: (context, index) {
         final memory = filteredMemories[index];
