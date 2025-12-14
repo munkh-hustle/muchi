@@ -17,8 +17,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/screens/timeline_screen.dart';
+import 'package:muchi/data/memory_data.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the memory data from storage
+  await MemoryData.init();
+
   runApp(const LoveDiaryApp());
 }
 

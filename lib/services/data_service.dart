@@ -240,7 +240,7 @@ class DataService {
     );
 
     if (confirm == true) {
-      MemoryData.memories.clear();
+      await MemoryData.clearAllMemories(); // Use the new method
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('All memories have been deleted.'),
