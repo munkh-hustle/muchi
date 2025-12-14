@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:muchi/data/memory.dart';
 import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
 import 'package:muchi/screens/settings_screen.dart';
 import 'package:muchi/widgets/memory_card.dart';
+import 'package:provider/provider.dart';
+import 'package:muchi/providers/memory_provider.dart';
 
 class TimelineScreen extends StatefulWidget {
   const TimelineScreen({super.key});
@@ -21,23 +24,24 @@ class _TimelineScreenState extends State<TimelineScreen> {
   @override
   void initState() {
     super.initState();
-    _generateMonthsList();
+    _months = ['No memories'];
+    _selectedMonth = 0;
   }
 
-  void _generateMonthsList() {
-    if (MemoryData.memories.isEmpty) {
+  void _generateMonthsList(BuildContext context) {
+    final memories = context.read<MemoryProvider>().memories;
+
+    if (memories.isEmpty) {
       _months = ['No memories'];
       return;
     }
 
-    // Get all unique month-year combinations from memories
     final Set<String> monthSet = {};
-    for (final memory in MemoryData.memories) {
+    for (final memory in memories) {
       final monthYear = DateFormat('MMMM yyyy').format(memory.date);
       monthSet.add(monthYear);
     }
 
-    // Convert to list and sort by date (newest first)
     _months = monthSet.toList();
     _months.sort((a, b) {
       final dateA = DateFormat('MMMM yyyy').parse(a);
@@ -45,38 +49,45 @@ class _TimelineScreenState extends State<TimelineScreen> {
       return dateB.compareTo(dateA);
     });
 
-    // Update selected month if needed
     if (_selectedMonth >= _months.length) {
       _selectedMonth = 0;
     }
   }
 
 // Call this method whenever memories change
-  void _refreshMonths() {
+  void _refreshMonths(BuildContext context) {
     setState(() {
-      _generateMonthsList();
+      _generateMonthsList(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F7),
-      body: Column(
-        children: [
-          // Custom App Bar
-          _buildAppBar(),
+    return Consumer<MemoryProvider>(
+      builder: (context, memoryProvider, child) {
+        // Update months when memories change
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final hasMemories = memoryProvider.memories.isNotEmpty;
+          final currentlyEmpty =
+              _months.isEmpty || _months.first == 'No memories';
 
-          // Month Selector
-          _buildMonthSelector(),
-
-          // Timeline
-          Expanded(
-            child: _buildTimeline(),
+          if (hasMemories && currentlyEmpty) {
+            _generateMonthsList(context);
+            if (mounted) setState(() {});
+          }
+        });
+        return Scaffold(
+          backgroundColor: const Color(0xFFFFF8F7),
+          body: Column(
+            children: [
+              _buildAppBar(),
+              _buildMonthSelector(),
+              Expanded(child: _buildTimeline(memoryProvider.memories)),
+            ],
           ),
-        ],
-      ),
-      floatingActionButton: _buildFloatingActionButton(),
+          floatingActionButton: _buildFloatingActionButton(),
+        );
+      },
     );
   }
 
@@ -172,43 +183,14 @@ class _TimelineScreenState extends State<TimelineScreen> {
     );
   }
 
-  Widget _buildTimeline() {
+  // Update _buildTimeline to use memories parameter
+  Widget _buildTimeline(List<Memory> memories) {
     if (_months.isEmpty || _months.first == 'No memories') {
-      // Show empty state
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.heart_broken,
-              size: 80,
-              color: Colors.grey.shade300,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No memories yet',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap the + button to add your first memory!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade400,
-              ),
-            ),
-          ],
-        ),
-      );
+      return _buildEmptyState();
     }
 
     final selectedMonthYear = _months[_selectedMonth];
-    final selectedDate = DateFormat('MMMM yyyy').parse(selectedMonthYear);
-
-    final filteredMemories = MemoryData.memories.where((memory) {
+    final filteredMemories = memories.where((memory) {
       final memoryMonthYear = DateFormat('MMMM yyyy').format(memory.date);
       return memoryMonthYear == selectedMonthYear;
     }).toList();
@@ -221,64 +203,82 @@ class _TimelineScreenState extends State<TimelineScreen> {
         return MemoryCard(
           memory: memory,
           index: index,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MemoryDetailScreen(memory: memory),
-              ),
-            );
-          },
-          onEdit: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AddEditMemoryScreen(memory: memory),
-                fullscreenDialog: true,
-              ),
-            ).then((refresh) {
-              if (refresh == true) {
-                setState(() {
-                  _refreshMonths(); // Refresh the month list
-                });
-              }
-            });
-          },
-          onDelete: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Delete Memory'),
-                content:
-                    const Text('Are you sure you want to delete this memory?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      MemoryData.deleteMemory(memory);
-                      setState(() {});
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Memory deleted!'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                    ),
-                    child: const Text('Delete'),
-                  ),
-                ],
-              ),
-            );
-          },
+          onTap: () => _openMemoryDetail(context, memory),
+          onEdit: () => _editMemory(context, memory),
+          onDelete: () => _deleteMemory(context, memory),
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.heart_broken,
+            size: 80,
+            color: Colors.grey.shade300,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No memories yet',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap the + button to add your first memory!',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openMemoryDetail(BuildContext context, Memory memory) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MemoryDetailScreen(memory: memory),
+      ),
+    );
+  }
+
+  void _deleteMemory(BuildContext context, Memory memory) {
+    final memoryProvider = context.read<MemoryProvider>();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Memory'),
+        content: const Text('Are you sure you want to delete this memory?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await memoryProvider.deleteMemory(memory);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Memory deleted!'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -328,9 +328,21 @@ class _TimelineScreenState extends State<TimelineScreen> {
       ),
     ).then((refresh) {
       if (refresh == true) {
-        setState(() {
-          _refreshMonths(); // Refresh the month list
-        });
+        _refreshMonths(context);
+      }
+    });
+  }
+
+  void _editMemory(BuildContext context, Memory memory) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddEditMemoryScreen(memory: memory),
+        fullscreenDialog: true,
+      ),
+    ).then((refresh) {
+      if (refresh == true) {
+        _refreshMonths(context);
       }
     });
   }

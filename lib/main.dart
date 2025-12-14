@@ -1,31 +1,12 @@
-// lib/
-// ├── main.dart
-// ├── data/
-// │   ├── memory.dart
-// │   └── memory_data.dart
-// ├── screens/
-// │   ├── add_edit_memory_screen.dart
-// │   ├── timeline_screen.dart
-// │   └── memory_detail_screen.dart
-// │   └── settings_screen.dart
-// ├── widgets/
-// │   └── memory_card.dart
-// └── utils/
-//     └── helpers.dart
-// └── services/
-//     └── data_service.dart
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:muchi/providers/memory_provider.dart';
 import 'package:muchi/screens/timeline_screen.dart';
-import 'package:muchi/data/memory_data.dart';
 
-void main() async {
-  // Ensure Flutter is initialized
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize the memory data from storage
-  await MemoryData.init();
-
   runApp(const LoveDiaryApp());
 }
 
@@ -34,28 +15,21 @@ class LoveDiaryApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'LoveLines',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFFFB6C1),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        fontFamily: GoogleFonts.inter().fontFamily,
-        textTheme: TextTheme(
-          displayLarge: GoogleFonts.dancingScript(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
+    return ChangeNotifierProvider(
+      create: (context) => MemoryProvider(),
+      child: MaterialApp(
+        title: 'LoveLines',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFFFFB6C1),
+            brightness: Brightness.light,
           ),
-          bodyLarge: GoogleFonts.inter(
-            fontSize: 16,
-            height: 1.5,
-          ),
+          useMaterial3: true,
+          fontFamily: GoogleFonts.inter().fontFamily,
         ),
+        home: const TimelineScreen(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const TimelineScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

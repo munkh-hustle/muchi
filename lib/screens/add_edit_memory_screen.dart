@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/data/memory_data.dart';
+import 'package:muchi/providers/memory_provider.dart';
 import 'package:muchi/utils/helpers.dart';
+import 'package:provider/provider.dart';
 
 class AddEditMemoryScreen extends StatefulWidget {
   final Memory? memory; // null = add, not null = edit
@@ -522,7 +524,7 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
 
               // Save Button
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     final newMemory = Memory(
                       date: _selectedDate,
@@ -537,10 +539,10 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                       tags: _tags,
                       secretNote: _secretNoteController.text,
                     );
+                    final memoryProvider = context.read<MemoryProvider>();
 
                     if (widget.memory == null) {
-                      // Add new memory
-                      MemoryData.addMemory(newMemory);
+                      await memoryProvider.addMemory(newMemory);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Memory added successfully!'),
@@ -548,8 +550,8 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                         ),
                       );
                     } else {
-                      // Update existing memory
-                      MemoryData.updateMemory(widget.memory!, newMemory);
+                      await memoryProvider.updateMemory(
+                          widget.memory!, newMemory);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Memory updated successfully!'),
@@ -586,6 +588,7 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
   }
 
   void _showDeleteDialog(BuildContext context) {
+    final memoryProvider = context.read<MemoryProvider>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -598,10 +601,10 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              MemoryData.deleteMemory(widget.memory!);
+            onPressed: () async {
+              await memoryProvider.deleteMemory(widget.memory!);
               Navigator.pop(context);
-              Navigator.pop(context, true); // Return to timeline
+              Navigator.pop(context, true);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Memory deleted successfully!'),
@@ -609,9 +612,7 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                 ),
               );
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],
