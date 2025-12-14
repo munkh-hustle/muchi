@@ -2,16 +2,19 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:muchi/providers/memory_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/data/memory_data.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class DataService {
   // Export memories as JSON file
   static Future<void> exportMemories(BuildContext context) async {
     try {
-      final memories = MemoryData.memories;
+      final memoryProvider = context.read<MemoryProvider>();
+      final memories = memoryProvider.memories;
       final List<Map<String, dynamic>> exportData = memories.map((memory) {
         return {
           'date': memory.date.toIso8601String(),
@@ -126,11 +129,12 @@ class DataService {
           ],
         ),
       );
+      final memoryProvider = context.read<MemoryProvider>(); // Add this
 
       if (confirm == true) {
         // Add imported memories
         for (var memory in importedMemories) {
-          MemoryData.addMemory(memory);
+          await memoryProvider.addMemory(memory);
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -154,7 +158,8 @@ class DataService {
   // Export as plain text (readable format)
   static Future<void> exportAsText(BuildContext context) async {
     try {
-      final memories = MemoryData.memories;
+      final memoryProvider = context.read<MemoryProvider>();
+      final memories = memoryProvider.memories;
       final buffer = StringBuffer();
 
       buffer.writeln('❤️ LoveLines Memories Export ❤️');
@@ -240,7 +245,8 @@ class DataService {
     );
 
     if (confirm == true) {
-      await MemoryData.clearAllMemories(); // Use the new method
+      final memoryProvider = context.read<MemoryProvider>(); // Add this
+      await memoryProvider.clearAll();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('All memories have been deleted.'),

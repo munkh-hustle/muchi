@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/services/data_service.dart';
+import 'package:provider/provider.dart'; // Add this import
+import 'package:muchi/providers/memory_provider.dart'; // Add this import
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final memoryProvider = context.read<MemoryProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -72,7 +75,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildInfoItem(
                 'Memories Count',
-                '${MemoryData.memories.length}',
+                '${memoryProvider.memories.length}',
               ),
             ],
           ),
