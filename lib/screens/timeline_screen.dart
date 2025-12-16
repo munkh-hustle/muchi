@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
+import 'package:muchi/screens/ig_chat_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
 import 'package:muchi/screens/settings_screen.dart';
 import 'package:muchi/widgets/memory_card.dart';
@@ -376,6 +377,20 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 ),
               ),
               const SizedBox(height: 30),
+              _buildMenuItem(
+                icon: Icons.chat,
+                title: 'IG Chat',
+                color: const Color.fromARGB(255, 255, 123, 189),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const IgChatScreen(),
+                    ),
+                  );
+                },
+              ),
               _buildMenuItem(
                 icon: Icons.calendar_month,
                 title: 'Calendar View',
