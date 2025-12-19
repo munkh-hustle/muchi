@@ -22,7 +22,7 @@ class LoveDiaryApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ChatProvider()),
       ],
       child: MaterialApp(
-        title: 'LoveLines',
+        title: 'MuChi',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: const Color(0xFFFFB6C1),

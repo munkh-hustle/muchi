@@ -1,10 +1,10 @@
+// lib/services/storage_service.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:muchi/data/memory.dart';
 
 class StorageService {
   static const String _memoriesKey = 'memories_data';
-  static const String _versionKey = 'data_version';
   static const String _currentVersion = '1.0';
 
   // Save all memories to local storage

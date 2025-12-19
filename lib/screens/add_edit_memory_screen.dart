@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
-import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/providers/memory_provider.dart';
 import 'package:muchi/utils/helpers.dart';
 import 'package:provider/provider.dart';

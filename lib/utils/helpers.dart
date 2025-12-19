@@ -1,3 +1,4 @@
+// lib/utils/helpers.dart
 // Simple helper functions for emoji display
 String getMoodDisplay(String mood) {
   // Return the emoji directly or use default

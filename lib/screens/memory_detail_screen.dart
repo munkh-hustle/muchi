@@ -1,3 +1,4 @@
+// lib/screens/memory_detail_screen.dart
 import 'package:flutter/material.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:intl/intl.dart';

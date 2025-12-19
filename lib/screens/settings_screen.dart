@@ -1,5 +1,5 @@
+// lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
-import 'package:muchi/data/memory_data.dart';
 import 'package:muchi/services/data_service.dart';
 import 'package:provider/provider.dart'; // Add this import
 import 'package:muchi/providers/memory_provider.dart'; // Add this import
