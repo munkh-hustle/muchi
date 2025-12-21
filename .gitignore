@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# folder for picture
+assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/photos
+assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/videos
+assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/audio

@@ -1,7 +1,7 @@
 name: muchi
 description: "for my loved ones."
 publish_to: 'none'
-version: 1.0.6+2
+version: 1.0.7+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -32,6 +32,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/your_instagram_activity/
 
 flutter_icons:
   android: "launcher_icon"

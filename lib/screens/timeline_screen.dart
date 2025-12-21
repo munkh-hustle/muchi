@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
+import 'package:muchi/screens/ig_chat_hierarchical_screen.dart';
 import 'package:muchi/screens/ig_chat_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
 import 'package:muchi/screens/settings_screen.dart';
@@ -386,7 +387,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const IgChatScreen(),
+                      builder: (context) => const IgChatHierarchicalScreen(),
                     ),
                   );
                 },
