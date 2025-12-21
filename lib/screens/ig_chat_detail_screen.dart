@@ -399,152 +399,95 @@ class IgChatDetailScreen extends StatelessWidget {
     final reelLinks = _extractReelLinks(content);
     final instagramLinks = _extractInstagramLinks(content);
 
-    if (reelLinks.isNotEmpty) {
+    // Check for general URLs/attachments
+    final allUrls = _extractAllUrls(content);
+
+    // Handle Instagram links first
+    if (reelLinks.isNotEmpty || instagramLinks.isNotEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (final link in reelLinks)
-            GestureDetector(
-              onTap: () => _openUrl(context, link),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 4),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B6B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFF6B6B)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.play_circle_filled,
-                      color: Color(0xFFFF6B6B),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '🎬 Instagram Reel',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: const Color(0xFFFF6B6B),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.open_in_new,
-                      color: Color(0xFFFF6B6B),
-                      size: 14,
-                    ),
-                  ],
-                ),
-              ),
+            _buildLinkChip(
+              context,
+              link,
+              '🎬 Instagram Reel',
+              Icons.play_circle_filled,
             ),
-          if (content.replaceAll(reelLinks.join(''), '').trim().isNotEmpty)
+          for (final link in instagramLinks)
+            _buildLinkChip(
+              context,
+              link,
+              '📱 Instagram Post',
+              Icons.image,
+            ),
+          if (content
+              .replaceAll(reelLinks.join(''), '')
+              .replaceAll(instagramLinks.join(''), '')
+              .trim()
+              .isNotEmpty)
             Text(
-              content.replaceAll(reelLinks.join(''), '').trim(),
-              style: const TextStyle(
-                fontSize: 16,
-              ),
+              content
+                  .replaceAll(reelLinks.join(''), '')
+                  .replaceAll(instagramLinks.join(''), '')
+                  .trim(),
+              style: const TextStyle(fontSize: 16),
             ),
         ],
       );
-    } else if (instagramLinks.isNotEmpty) {
+    }
+
+    // Handle attachment messages
+    else if (content.contains('You sent an attachment') ||
+        content.contains('Sent an attachment') ||
+        content.contains('sent an attachment')) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final link in instagramLinks)
-            GestureDetector(
-              onTap: () => _openUrl(context, link),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 4),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFB6C1).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFFB6C1)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.image,
-                      color: Color(0xFFFF6B6B),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '📱 Instagram Post',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: const Color(0xFFFF6B6B),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const Icon(
-                      Icons.open_in_new,
-                      color: Color(0xFFFF6B6B),
-                      size: 14,
-                    ),
-                  ],
-                ),
+          if (allUrls.isNotEmpty)
+            for (final url in allUrls)
+              _buildLinkChip(
+                context,
+                url,
+                '📎 Attachment',
+                Icons.attachment,
               ),
-            ),
-          if (content.replaceAll(instagramLinks.join(''), '').trim().isNotEmpty)
-            Text(
-              content.replaceAll(instagramLinks.join(''), '').trim(),
-              style: const TextStyle(
-                fontSize: 16,
-              ),
+          if (allUrls.isEmpty)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.attachment,
+                  color: Colors.grey,
+                  size: 16,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Attachment (no link available)',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+              ],
             ),
         ],
       );
-    } else if (content.contains('You sent an attachment')) {
-      return GestureDetector(
-        onTap: () {
-          // Try to find if there's a link in the message
-          final url = _extractUrl(content);
-          if (url.isNotEmpty) {
-            _openUrl(context, url);
-          }
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.link,
-              color: Colors.blue,
-              size: 16,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              'Tap to open attachment',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.blue.shade700,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ],
-        ),
-      );
-    } else if (content.contains('Liked a message')) {
+    }
+
+    // Handle liked/reacted messages
+    else if (content.contains('Liked a message') ||
+        content.contains('Reacted')) {
       return Row(
         children: [
-          const Icon(
-            Icons.favorite,
-            color: Colors.red,
+          Icon(
+            content.contains('Liked') ? Icons.favorite : Icons.emoji_emotions,
+            color: content.contains('Liked') ? Colors.red : Colors.amber,
             size: 16,
           ),
           const SizedBox(width: 6),
           Text(
-            '❤️ Liked a message',
+            content,
             style: const TextStyle(
               fontSize: 16,
               fontStyle: FontStyle.italic,
@@ -552,25 +495,10 @@ class IgChatDetailScreen extends StatelessWidget {
           ),
         ],
       );
-    } else if (content.contains('Reacted')) {
-      return Row(
-        children: [
-          const Icon(
-            Icons.emoji_emotions,
-            color: Colors.amber,
-            size: 16,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '😊 Reacted to a message',
-            style: const TextStyle(
-              fontSize: 16,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ],
-      );
-    } else if (content.trim().isEmpty && hasPhotos) {
+    }
+
+    // Handle empty content with photos
+    else if (content.trim().isEmpty && hasPhotos) {
       return Row(
         children: [
           const Icon(
@@ -581,39 +509,65 @@ class IgChatDetailScreen extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             '📷 Photo',
-            style: const TextStyle(
-              fontSize: 16,
-            ),
-          ),
-        ],
-      );
-    } else if (content.trim().isEmpty && !hasPhotos) {
-      return Row(
-        children: [
-          const Icon(
-            Icons.attachment,
-            color: Colors.grey,
-            size: 16,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            '📎 Media',
-            style: const TextStyle(
-              fontSize: 16,
-              fontStyle: FontStyle.italic,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 16),
           ),
         ],
       );
     }
 
+    // Default text display
     return Text(
       content,
-      style: const TextStyle(
-        fontSize: 16,
+      style: const TextStyle(fontSize: 16),
+    );
+  }
+
+// Add this helper method for building link chips
+  Widget _buildLinkChip(
+      BuildContext context, String url, String label, IconData icon) {
+    return GestureDetector(
+      onTap: () => _openUrl(context, url),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF6B6B).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFFF6B6B)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: const Color(0xFFFF6B6B), size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFFF6B6B),
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.open_in_new,
+              color: Color(0xFFFF6B6B),
+              size: 14,
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+// Update the URL extraction method to catch all URLs
+  List<String> _extractAllUrls(String text) {
+    final urlRegex = RegExp(r'https?://[^\s]+');
+    return urlRegex.allMatches(text).map((m) => m.group(0)!).toList();
   }
 
   List<String> _extractReelLinks(String text) {
@@ -626,25 +580,43 @@ class IgChatDetailScreen extends StatelessWidget {
     return postRegex.allMatches(text).map((m) => m.group(0)!).toList();
   }
 
-  String _extractUrl(String text) {
-    final urlRegex = RegExp(r'https?://[^\s]+');
-    final matches = urlRegex.allMatches(text);
-    return matches.isNotEmpty ? matches.first.group(0)! : '';
-  }
-
   Future<void> _openUrl(BuildContext context, String url) async {
-    // Check if URL has protocol
+    if (url.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No URL available to open'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     String finalUrl = url;
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       finalUrl = 'https://$url';
     }
 
-    // Show confirmation dialog
     final shouldOpen = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Open Link'),
-        content: Text('Open this link in browser?\n\n$finalUrl'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Open this link in browser?'),
+            const SizedBox(height: 8),
+            Text(
+              finalUrl,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

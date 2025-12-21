@@ -50,9 +50,17 @@ class SettingsScreen extends StatelessWidget {
               ),
               _buildSettingItem(
                 icon: Icons.merge,
-                title: 'Bulk Import IG Chat',
-                subtitle: 'Import multiple chat JSON files at once',
-                onTap: () => _showBulkImportDialog(context),
+                title: 'Import IG Chat',
+                subtitle: 'Import Instagram chat JSON file',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const IgChatScreen(),
+                    ),
+                  );
+                },
                 color: const Color(0xFF9C27B0),
               ),
               _buildSettingItem(

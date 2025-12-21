@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:muchi/services/chat_merge_service.dart';
 import 'package:provider/provider.dart';
 import 'package:muchi/providers/chat_provider.dart';
 import 'package:muchi/models/chat_message.dart';
@@ -38,67 +37,42 @@ class _IgChatScreenState extends State<IgChatScreen> {
     super.dispose();
   }
 
-  // In _importChat method, add option to merge multiple files
   Future<void> _importChat() async {
     try {
-      // Show options dialog
-      final option = await showDialog<int>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Import Chat'),
-          content: const Text('How do you want to import chat data?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, 1),
-              child: const Text('Single JSON file'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 2),
-              child: const Text('Merge multiple JSON files'),
-            ),
-          ],
-        ),
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        allowMultiple: false, // Single file only
       );
 
-      if (option == 1) {
-        // Original single file import
-        FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['json'],
-          allowMultiple: false,
-        );
+      if (result == null || result.files.isEmpty) return;
 
-        if (result == null || result.files.isEmpty) return;
+      final file = File(result.files.single.path!);
+      final jsonString = await file.readAsString();
 
-        final file = File(result.files.single.path!);
-        final jsonString = await file.readAsString();
-        final chatProvider = context.read<ChatProvider>();
-        await chatProvider.importChatFromJson(jsonString);
+      // Validate JSON structure
+      final jsonData = jsonDecode(jsonString);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Chat imported successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (option == 2) {
-        // Merge multiple files
-        final mergedJson = await ChatMergeService.importAndMergeMultipleFiles();
-        final chatProvider = context.read<ChatProvider>();
-        await chatProvider.importChatFromJson(mergedJson);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Multiple chat files merged and imported!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+      if (jsonData['messages'] == null &&
+          (jsonData['conversation'] == null ||
+              jsonData['conversation']['messages'] == null)) {
+        throw Exception('Invalid Instagram chat JSON file');
       }
+
+      final chatProvider = context.read<ChatProvider>();
+      await chatProvider.importChatFromJson(jsonString);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Chat imported successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       print('Import error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Import failed: $e'),
+          content: Text('Import failed: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );

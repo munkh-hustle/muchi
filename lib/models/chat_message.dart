@@ -19,14 +19,87 @@ class ChatMessage {
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
-    return ChatMessage(
-      senderName: _safeString(json['sender_name']?.toString() ?? 'Unknown'),
-      timestamp: _parseTimestamp(json['timestamp_ms']),
-      content: _safeString(json['content']?.toString() ?? ''),
-      isGeoblocked: json['is_geoblocked_for_viewer'] ?? false,
-      isUnsent: json['is_unsent_image_by_messenger_kid_parent'] ?? false,
-      photos: _parsePhotos(json['photos']),
-    );
+    try {
+      // Get content and sanitize it
+      String content = '';
+      if (json['content'] != null) {
+        final rawContent = json['content'].toString();
+        content = _safeString(rawContent);
+      }
+
+      // Get sender name
+      String senderName = 'Unknown';
+      if (json['sender_name'] != null) {
+        final rawSender = json['sender_name'].toString();
+        senderName = _safeString(rawSender);
+      }
+
+      // Parse timestamp
+      DateTime timestamp;
+      try {
+        if (json['timestamp_ms'] != null) {
+          if (json['timestamp_ms'] is int) {
+            timestamp =
+                DateTime.fromMillisecondsSinceEpoch(json['timestamp_ms']);
+          } else if (json['timestamp_ms'] is String) {
+            timestamp = DateTime.fromMillisecondsSinceEpoch(
+                int.parse(json['timestamp_ms']));
+          } else {
+            timestamp = DateTime.now();
+          }
+        } else if (json['timestamp'] != null) {
+          // Alternative timestamp field
+          if (json['timestamp'] is int) {
+            timestamp = DateTime.fromMillisecondsSinceEpoch(json['timestamp']);
+          } else if (json['timestamp'] is String) {
+            timestamp = DateTime.parse(json['timestamp']);
+          } else {
+            timestamp = DateTime.now();
+          }
+        } else {
+          timestamp = DateTime.now();
+        }
+      } catch (e) {
+        timestamp = DateTime.now();
+      }
+
+      // Parse photos
+      List<String> photos = [];
+      try {
+        if (json['photos'] != null && json['photos'] is List) {
+          photos = (json['photos'] as List)
+              .map<String>((p) {
+                if (p['uri'] != null) return p['uri'].toString();
+                if (p['uri'] == null && p is String) return p;
+                return '';
+              })
+              .where((uri) => uri.isNotEmpty)
+              .toList();
+        }
+      } catch (e) {
+        photos = [];
+      }
+
+      return ChatMessage(
+        senderName: senderName,
+        timestamp: timestamp,
+        content: content,
+        isGeoblocked: json['is_geoblocked_for_viewer'] ?? false,
+        isUnsent: json['is_unsent_image_by_messenger_kid_parent'] ?? false,
+        photos: photos,
+      );
+    } catch (e) {
+      print('Error creating ChatMessage from JSON: $e');
+      // Return a safe default message
+      return ChatMessage(
+        senderName: 'Error',
+        timestamp: DateTime.now(),
+        content: '[Error loading message]',
+        isGeoblocked: false,
+        isUnsent: false,
+        photos: [],
+      );
+    }
   }
 
   static DateTime _parseTimestamp(dynamic timestampMs) {
@@ -55,21 +128,45 @@ class ChatMessage {
   }
 
   static String _safeString(String input) {
-    try {
-      // First try to decode and re-encode to handle encoding issues
-      if (input.isEmpty) return input;
+    if (input.isEmpty) return input;
 
-      // Handle common encoding issues
+    try {
+      // Handle UTF-16 encoding issues
       final bytes = utf8.encode(input);
+
+      // Try to decode with error handling
       return utf8.decode(bytes, allowMalformed: true);
     } catch (e) {
-      // If everything fails, filter out invalid characters
-      final sanitized = String.fromCharCodes(
-        input.runes.where(
-          (rune) => rune < 0xD800 || rune > 0xDFFF,
-        ),
-      );
-      return sanitized.isNotEmpty ? sanitized : '[Unable to display message]';
+      // If UTF-8 fails, try to filter invalid characters
+      try {
+        // Remove any invalid UTF-16 surrogate pairs
+        final buffer = StringBuffer();
+        for (int i = 0; i < input.length; i++) {
+          final char = input[i];
+          final code = input.codeUnitAt(i);
+
+          // Check for valid UTF-16 code point
+          if ((code >= 0xD800 && code <= 0xDBFF) ||
+              (code >= 0xDC00 && code <= 0xDFFF)) {
+            // Skip surrogate pairs or handle them
+            continue;
+          }
+
+          // Check for other invalid characters
+          if (code == 0xFFFD || code == 0xFFFF) {
+            continue;
+          }
+
+          buffer.write(char);
+        }
+
+        final sanitized = buffer.toString();
+        return sanitized.isNotEmpty
+            ? sanitized
+            : '[Message contains invalid characters]';
+      } catch (e2) {
+        return '[Unable to display message]';
+      }
     }
   }
 

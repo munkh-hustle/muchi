@@ -45,34 +45,88 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> _parseChatData(String jsonString) async {
     try {
+      print('Parsing chat data...');
       final jsonData = jsonDecode(jsonString);
 
-      // Handle different Instagram JSON structures
       List<dynamic> messagesList;
+      List<String> participantsList = ['User 1', 'User 2'];
 
-      if (jsonData['participants'] != null && jsonData['messages'] != null) {
+      // Handle different JSON structures
+      if (jsonData['messages'] != null) {
         messagesList = jsonData['messages'];
-      } else if (jsonData['conversation'] != null) {
-        messagesList = jsonData['conversation']['messages'] ?? [];
+
+        // Get participants
+        if (jsonData['participants'] != null &&
+            jsonData['participants'] is List) {
+          participantsList =
+              (jsonData['participants'] as List).map<String>((p) {
+            if (p is String) return p;
+            if (p is Map && p['name'] != null) return p['name'].toString();
+            return 'Unknown';
+          }).toList();
+        }
+      } else if (jsonData['conversation'] != null &&
+          jsonData['conversation']['messages'] != null) {
+        messagesList = jsonData['conversation']['messages'];
+
+        // Get participants
+        if (jsonData['conversation']['participants'] != null &&
+            jsonData['conversation']['participants'] is List) {
+          participantsList = (jsonData['conversation']['participants'] as List)
+              .map<String>((p) {
+            if (p is String) return p;
+            if (p is Map && p['name'] != null) return p['name'].toString();
+            return 'Unknown';
+          }).toList();
+        }
       } else {
-        messagesList = jsonData['messages'] ?? [];
+        throw Exception('Invalid chat JSON structure');
       }
 
-      // Parse messages
-      _messages = messagesList
-          .where((msg) =>
-              msg['sender_name'] != null ||
-              msg['photos'] != null ||
-              msg['videos'] != null)
-          .map((msg) => ChatMessage.fromJson(msg))
-          .toList();
+      print(
+          'Found ${messagesList.length} messages from ${participantsList.join(' & ')}');
 
-      // Sort messages by timestamp
-      _messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      // Parse messages with error handling
+      final List<ChatMessage> parsedMessages = [];
+      int errorCount = 0;
 
+      for (int i = 0; i < messagesList.length; i++) {
+        try {
+          final msg = messagesList[i];
+          if (msg is Map<String, dynamic>) {
+            final chatMessage = ChatMessage.fromJson(msg);
+            parsedMessages.add(chatMessage);
+          }
+        } catch (e) {
+          errorCount++;
+          print('Error parsing message $i: $e');
+
+          // Skip problematic messages instead of crashing
+          continue;
+        }
+      }
+
+      if (errorCount > 0) {
+        print(
+            'Skipped $errorCount problematic messages out of ${messagesList.length}');
+      }
+
+      // Sort messages by timestamp (newest first)
+      parsedMessages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      _messages = parsedMessages;
+      _participants = participantsList;
       _hasChatData = _messages.isNotEmpty;
+
+      print('Successfully parsed ${_messages.length} messages');
     } catch (e) {
       print('Error parsing chat data: $e');
+
+      // Clear data on error
+      _messages.clear();
+      _participants.clear();
+      _hasChatData = false;
+
       rethrow;
     }
   }
