@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
+import 'package:muchi/providers/chat_provider.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/ig_chat_hierarchical_screen.dart';
 import 'package:muchi/screens/ig_chat_screen.dart';
@@ -384,12 +385,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 color: const Color.fromARGB(255, 255, 123, 189),
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const IgChatHierarchicalScreen(),
-                    ),
-                  );
+
+                  // Check if there's already chat data
+                  final chatProvider = context.read<ChatProvider>();
+                  if (chatProvider.hasChatData) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const IgChatHierarchicalScreen(),
+                      ),
+                    );
+                  } else {
+                    // Show import dialog or go to import screen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const IgChatScreen(),
+                      ),
+                    );
+                  }
                 },
               ),
               _buildMenuItem(

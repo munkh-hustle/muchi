@@ -1,4 +1,5 @@
 // lib/screens/ig_chat_screen.dart
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -50,7 +51,21 @@ class _IgChatScreenState extends State<IgChatScreen> {
       final jsonString = await file.readAsString();
       final chatProvider = context.read<ChatProvider>();
 
-      await chatProvider.importChatFromJson(jsonString);
+      // Try to parse and import
+      final jsonData = jsonDecode(jsonString);
+
+      // Check if this is the correct Instagram JSON structure
+      if (jsonData['participants'] == null || jsonData['messages'] == null) {
+        // Try alternative structure
+        if (jsonData['conversation'] != null) {
+          // Different Instagram JSON format
+          await chatProvider.importChatFromJson(jsonString);
+        } else {
+          throw Exception('Invalid Instagram chat JSON format');
+        }
+      } else {
+        await chatProvider.importChatFromJson(jsonString);
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -59,9 +74,11 @@ class _IgChatScreenState extends State<IgChatScreen> {
         ),
       );
     } catch (e) {
+      print('Import error: $e'); // For debugging
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Import failed: $e'),
+          content: Text(
+              'Import failed: $e\nMake sure you selected the correct JSON file.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -277,7 +294,8 @@ class _IgChatScreenState extends State<IgChatScreen> {
                             message.content,
                             style: TextStyle(
                               fontSize: 16,
-                              color: isCurrentUser ? Colors.white : Colors.black,
+                              color:
+                                  isCurrentUser ? Colors.white : Colors.black,
                             ),
                           ),
                         ),
@@ -292,8 +310,7 @@ class _IgChatScreenState extends State<IgChatScreen> {
                       ],
                     ),
                   ),
-                  if (isCurrentUser)
-                    const SizedBox(width: 8),
+                  if (isCurrentUser) const SizedBox(width: 8),
                   if (isCurrentUser)
                     CircleAvatar(
                       radius: 16,

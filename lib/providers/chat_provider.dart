@@ -44,22 +44,48 @@ class ChatProvider extends ChangeNotifier {
   }
 
   Future<void> _parseChatData(String jsonString) async {
-    final jsonData = jsonDecode(jsonString);
+    try {
+      final jsonData = jsonDecode(jsonString);
 
-    // Parse participants
-    _participants = (jsonData['participants'] as List)
-        .map<String>((p) => p['name'].toString())
-        .toList();
+      // Handle different Instagram JSON structures
+      List<dynamic> participantsList;
+      List<dynamic> messagesList;
 
-    // Parse messages
-    _messages = (jsonData['messages'] as List)
-        .map((msg) => ChatMessage.fromJson(msg))
-        .toList();
+      if (jsonData['participants'] != null && jsonData['messages'] != null) {
+        // Standard structure
+        participantsList = jsonData['participants'];
+        messagesList = jsonData['messages'];
+      } else if (jsonData['conversation'] != null) {
+        // Alternative structure
+        final conversation = jsonData['conversation'];
+        participantsList = conversation['participants'] ?? [];
+        messagesList = conversation['messages'] ?? [];
+      } else {
+        throw Exception('Invalid chat JSON structure');
+      }
 
-    // Sort messages by timestamp (newest first)
-    _messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      // Parse participants
+      _participants = participantsList
+          .map<String>((p) => p['name']?.toString() ?? 'Unknown')
+          .toList();
 
-    _hasChatData = true;
+      // Parse messages
+      _messages = messagesList
+          .where((msg) => msg['sender_name'] != null) // Filter valid messages
+          .map((msg) => ChatMessage.fromJson(msg))
+          .toList();
+
+      // Sort messages by timestamp (newest first)
+      _messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+      _hasChatData = _messages.isNotEmpty;
+
+      print(
+          'Imported ${_messages.length} messages from ${_participants.join(' & ')}');
+    } catch (e) {
+      print('Error parsing chat data: $e');
+      rethrow;
+    }
   }
 
   Future<void> clearChatData() async {
