@@ -1,5 +1,6 @@
 // lib/screens/ig_chat_detail_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:muchi/models/chat_message.dart';
 
 class IgChatDetailScreen extends StatelessWidget {
@@ -105,8 +106,12 @@ class IgChatDetailScreen extends StatelessWidget {
   }
 
   Widget _buildPhotoPreview(List<String> photoPaths) {
+    if (photoPaths.isEmpty) return const SizedBox.shrink();
+
     // Extract filename from path
     final filename = photoPaths.first.split('/').last;
+    final assetPath =
+        'assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/photos/$filename';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -115,15 +120,36 @@ class IgChatDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.grey.shade200,
-        image: DecorationImage(
-          image: AssetImage(
-              'assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/photos/$filename'),
-          fit: BoxFit.cover,
-        ),
         border: Border.all(color: Colors.grey.shade300),
       ),
-      child: photoPaths.length > 1
-          ? Positioned(
+      child: Stack(
+        children: [
+          // Try to load the image, fallback to placeholder
+          FutureBuilder(
+            future: _loadImage(assetPath),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data == true) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.asset(
+                    assetPath,
+                    fit: BoxFit.cover,
+                    width: 150,
+                    height: 150,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildPhotoPlaceholder();
+                    },
+                  ),
+                );
+              } else {
+                return _buildPhotoPlaceholder();
+              }
+            },
+          ),
+
+          // Multiple photos indicator
+          if (photoPaths.length > 1)
+            Positioned(
               top: 8,
               right: 8,
               child: Container(
@@ -140,9 +166,44 @@ class IgChatDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            )
-          : null,
+            ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildPhotoPlaceholder() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.photo,
+            size: 40,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Photo',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool> _loadImage(String assetPath) async {
+    try {
+      // Check if the asset exists in the bundle
+      await rootBundle.load(assetPath);
+      return true;
+    } catch (e) {
+      print('Asset not found: $assetPath');
+      return false;
+    }
   }
 
   String _getMessageContent(ChatMessage message) {
