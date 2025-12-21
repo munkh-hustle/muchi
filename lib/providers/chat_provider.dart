@@ -48,40 +48,29 @@ class ChatProvider extends ChangeNotifier {
       final jsonData = jsonDecode(jsonString);
 
       // Handle different Instagram JSON structures
-      List<dynamic> participantsList;
       List<dynamic> messagesList;
 
       if (jsonData['participants'] != null && jsonData['messages'] != null) {
-        // Standard structure
-        participantsList = jsonData['participants'];
         messagesList = jsonData['messages'];
       } else if (jsonData['conversation'] != null) {
-        // Alternative structure
-        final conversation = jsonData['conversation'];
-        participantsList = conversation['participants'] ?? [];
-        messagesList = conversation['messages'] ?? [];
+        messagesList = jsonData['conversation']['messages'] ?? [];
       } else {
-        throw Exception('Invalid chat JSON structure');
+        messagesList = jsonData['messages'] ?? [];
       }
-
-      // Parse participants
-      _participants = participantsList
-          .map<String>((p) => p['name']?.toString() ?? 'Unknown')
-          .toList();
 
       // Parse messages
       _messages = messagesList
-          .where((msg) => msg['sender_name'] != null) // Filter valid messages
+          .where((msg) =>
+              msg['sender_name'] != null ||
+              msg['photos'] != null ||
+              msg['videos'] != null)
           .map((msg) => ChatMessage.fromJson(msg))
           .toList();
 
-      // Sort messages by timestamp (newest first)
+      // Sort messages by timestamp
       _messages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
       _hasChatData = _messages.isNotEmpty;
-
-      print(
-          'Imported ${_messages.length} messages from ${_participants.join(' & ')}');
     } catch (e) {
       print('Error parsing chat data: $e');
       rethrow;

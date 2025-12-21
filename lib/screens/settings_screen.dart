@@ -1,5 +1,6 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
+import 'package:muchi/screens/ig_chat_screen.dart';
 import 'package:muchi/services/data_service.dart';
 import 'package:provider/provider.dart'; // Add this import
 import 'package:muchi/providers/memory_provider.dart'; // Add this import
@@ -46,6 +47,13 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'Import memories from backup file',
                 onTap: () => DataService.importMemories(context),
                 color: const Color(0xFFFF9800),
+              ),
+              _buildSettingItem(
+                icon: Icons.merge,
+                title: 'Bulk Import IG Chat',
+                subtitle: 'Import multiple chat JSON files at once',
+                onTap: () => _showBulkImportDialog(context),
+                color: const Color(0xFF9C27B0),
               ),
               _buildSettingItem(
                 icon: Icons.delete_forever,
@@ -192,6 +200,44 @@ class SettingsScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: Color(0xFFFF6B6B),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBulkImportDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Bulk Import Instagram Chat'),
+        content: const Text(
+          'Select all your message_*.json files from the Instagram data folder. '
+          'The app will merge them into a single conversation.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              // Navigate to chat screen with bulk import option
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => IgChatScreen(),
+                ),
+              ).then((_) {
+                // Trigger bulk import
+                Future.delayed(Duration(milliseconds: 500), () {
+                  // You might want to pass a parameter or use a different approach
+                  // This is just a conceptual example
+                });
+              });
+            },
+            child: const Text('Start Bulk Import'),
           ),
         ],
       ),

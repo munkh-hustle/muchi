@@ -109,4 +109,23 @@ class ChatMessage {
     }
     return content;
   }
+
+  bool get hasAttachment {
+    return content.contains('You sent an attachment') ||
+        content.contains('Sent an attachment') ||
+        photos.isNotEmpty;
+  }
+
+  String get attachmentType {
+    if (photos.isNotEmpty) return 'photo';
+    if (content.contains('.jpg') ||
+        content.contains('.png') ||
+        content.contains('.jpeg') ||
+        content.contains('.gif')) {
+      return 'image';
+    }
+    if (content.contains('.mp4') || content.contains('.mov')) return 'video';
+    if (content.contains('.pdf')) return 'document';
+    return 'file';
+  }
 }

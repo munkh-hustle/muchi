@@ -103,14 +103,42 @@ class IgChatDetailScreen extends StatelessWidget {
   Widget _buildPhotoPreview(BuildContext context, List<String> photoPaths) {
     if (photoPaths.isEmpty) return const SizedBox.shrink();
 
+    // For multiple photos, use a PageView
+    if (photoPaths.length > 1) {
+      return SizedBox(
+        height: 150,
+        width: 150,
+        child: PageView.builder(
+          itemCount: photoPaths.length,
+          itemBuilder: (context, index) {
+            return _buildSinglePhoto(
+                context,
+                photoPaths[index],
+                index,
+                photoPaths, // Pass the entire list
+                photoPaths.length);
+          },
+        ),
+      );
+    } else {
+      return _buildSinglePhoto(context, photoPaths.first, 0, photoPaths, 1);
+    }
+  }
+
+  Widget _buildSinglePhoto(
+      BuildContext context,
+      String photoPath,
+      int index,
+      List<String> photoPaths, // Add this parameter
+      int total) {
     // Extract filename from path
-    final filename = photoPaths.first.split('/').last;
-    final assetPath =
-        'assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/photos/$filename';
+    final filename = photoPath.split('/').last;
+    final assetPath = 'assets/$photoPath';
 
     return GestureDetector(
       onTap: () {
-        _showFullScreenImage(context, assetPath, photoPaths);
+        // Now we have access to photoPaths
+        _showFullScreenImageCarousel(context, photoPaths, index);
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
@@ -130,7 +158,6 @@ class IgChatDetailScreen extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // Try to load the image, fallback to placeholder
             FutureBuilder(
               future: _loadImage(assetPath),
               builder: (context, snapshot) {
@@ -154,7 +181,7 @@ class IgChatDetailScreen extends StatelessWidget {
             ),
 
             // Multiple photos indicator
-            if (photoPaths.length > 1)
+            if (total > 1)
               Positioned(
                 top: 8,
                 right: 8,
@@ -166,7 +193,7 @@ class IgChatDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '+${photoPaths.length - 1}',
+                    '${index + 1}/$total',
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.white,
@@ -174,32 +201,14 @@ class IgChatDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-
-            // Tap indicator
-            Positioned(
-              bottom: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.zoom_in,
-                  size: 12,
-                  color: Colors.white,
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  void _showFullScreenImage(
-      BuildContext context, String assetPath, List<String> photoPaths) {
+  void _showFullScreenImageCarousel(
+      BuildContext context, List<String> photoPaths, int initialIndex) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -211,61 +220,137 @@ class IgChatDetailScreen extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             color: Colors.black.withOpacity(0.9),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
                 // Close button
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: IconButton(
-                      icon: const Icon(Icons.close,
-                          color: Colors.white, size: 30),
-                      onPressed: () => Navigator.pop(context),
+                Positioned(
+                  top: 40,
+                  right: 20,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 30),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+
+                // Image carousel
+                Center(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.8,
+                    child: PageView.builder(
+                      controller: PageController(initialPage: initialIndex),
+                      itemCount: photoPaths.length,
+                      itemBuilder: (context, index) {
+                        final assetPath = 'assets/${photoPaths[index]}';
+                        return InteractiveViewer(
+                          panEnabled: true,
+                          minScale: 0.5,
+                          maxScale: 3,
+                          child: Center(
+                            child: FutureBuilder(
+                              future: _loadImage(assetPath),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData && snapshot.data == true) {
+                                  return Image.asset(
+                                    assetPath,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return _buildFullScreenPlaceholder();
+                                    },
+                                  );
+                                } else {
+                                  return _buildFullScreenPlaceholder();
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
 
-                // Image
-                Expanded(
+                // Page indicator
+                if (photoPaths.length > 1)
+                  Positioned(
+                    bottom: 40,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${initialIndex + 1} of ${photoPaths.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreenImage(BuildContext context, String assetPath) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(0),
+        child: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            color: Colors.black.withOpacity(0.9),
+            child: Stack(
+              children: [
+                // Close button
+                Positioned(
+                  top: 40,
+                  right: 20,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.close, color: Colors.white, size: 30),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+
+                // Single image viewer
+                Center(
                   child: InteractiveViewer(
                     panEnabled: true,
                     minScale: 0.5,
                     maxScale: 3,
-                    child: Center(
-                      child: FutureBuilder(
-                        future: _loadImage(assetPath),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData && snapshot.data == true) {
-                            return Image.asset(
-                              assetPath,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return _buildFullScreenPlaceholder();
-                              },
-                            );
-                          } else {
-                            return _buildFullScreenPlaceholder();
-                          }
-                        },
-                      ),
+                    child: FutureBuilder(
+                      future: _loadImage(assetPath),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data == true) {
+                          return Image.asset(
+                            assetPath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildFullScreenPlaceholder();
+                            },
+                          );
+                        } else {
+                          return _buildFullScreenPlaceholder();
+                        }
+                      },
                     ),
                   ),
                 ),
-
-                // Photo count and navigation (if multiple photos)
-                if (photoPaths.length > 1)
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Text(
-                      '1 of ${photoPaths.length} photos',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),
