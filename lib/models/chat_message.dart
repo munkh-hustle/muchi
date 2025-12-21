@@ -72,4 +72,41 @@ class ChatMessage {
       return sanitized.isNotEmpty ? sanitized : '[Unable to display message]';
     }
   }
+
+  bool get hasInstagramReel {
+    return content.contains('instagram.com/reel/');
+  }
+
+  bool get hasInstagramPost {
+    return content.contains('instagram.com/p/');
+  }
+
+  List<String> get instagramLinks {
+    final urlRegex = RegExp(r'https?://[^\s]+');
+    return urlRegex.allMatches(content).map((m) => m.group(0)!).toList();
+  }
+
+  List<String> get instagramReelLinks {
+    return instagramLinks
+        .where((link) => link.contains('instagram.com/reel/'))
+        .toList();
+  }
+
+  List<String> get instagramPostLinks {
+    return instagramLinks
+        .where((link) => link.contains('instagram.com/p/'))
+        .toList();
+  }
+
+  String get displayContent {
+    if (hasInstagramReel || hasInstagramPost) {
+      // Remove Instagram links from display text
+      String displayText = content;
+      for (final link in instagramLinks) {
+        displayText = displayText.replaceAll(link, '').trim();
+      }
+      return displayText.isNotEmpty ? displayText : 'Shared an Instagram link';
+    }
+    return content;
+  }
 }
