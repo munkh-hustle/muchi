@@ -18,16 +18,40 @@ class IgChatDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFFFF6B6B),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        backgroundColor: const Color(0xFFFFF8F7),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFFFF6B6B)),
+        centerTitle: true,
       ),
-      body: ListView.builder(
-        reverse: true,
-        padding: const EdgeInsets.all(16),
-        itemCount: messages.length,
-        itemBuilder: (context, index) {
-          final message = messages[index];
-          return _buildMessage(context, message);
-        },
+      backgroundColor: const Color(0xFFFFF8F7),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF8F7),
+              Color(0xFFFFF0F5),
+            ],
+          ),
+        ),
+        child: ListView.builder(
+          reverse: true,
+          padding: const EdgeInsets.all(16),
+          itemCount: messages.length,
+          itemBuilder: (context, index) {
+            final message = messages[index];
+            return _buildMessage(context, message);
+          },
+        ),
       ),
     );
   }
@@ -44,12 +68,26 @@ class IgChatDetailScreen extends StatelessWidget {
             isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!isCurrentUser)
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey.shade300,
-              child: Text(
-                message.senderName.substring(0, 1),
-                style: const TextStyle(fontSize: 12),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFB6C1).withOpacity(0.3),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFFB6C1),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  message.senderName.substring(0, 1),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFFFF6B6B),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           const SizedBox(width: 8),
@@ -62,21 +100,43 @@ class IgChatDetailScreen extends StatelessWidget {
                 if (hasPhotos) _buildPhotoPreview(context, message.photos),
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isCurrentUser
-                        ? const Color(0xFFFF6B6B)
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(18),
+                    color:
+                        isCurrentUser ? const Color(0xFFFF6B6B) : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: isCurrentUser
+                          ? const Radius.circular(20)
+                          : const Radius.circular(4),
+                      bottomRight: isCurrentUser
+                          ? const Radius.circular(4)
+                          : const Radius.circular(20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.pink.withOpacity(0.1),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: _buildMessageContent(context, message),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _formatTime(message.timestamp),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
+                Padding(
+                  padding: EdgeInsets.only(
+                    right: isCurrentUser ? 8 : 0,
+                    left: isCurrentUser ? 0 : 8,
+                  ),
+                  child: Text(
+                    _formatTime(message.timestamp),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ),
               ],
@@ -84,14 +144,32 @@ class IgChatDetailScreen extends StatelessWidget {
           ),
           if (isCurrentUser) const SizedBox(width: 8),
           if (isCurrentUser)
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: const Color(0xFFFFB6C1),
-              child: Text(
-                message.senderName.substring(0, 1),
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.white,
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B6B),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFF8E8E),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF6B6B).withOpacity(0.3),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  message.senderName.substring(0, 1),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -522,29 +600,28 @@ class IgChatDetailScreen extends StatelessWidget {
     );
   }
 
-// Add this helper method for building link chips
   Widget _buildLinkChip(
       BuildContext context, String url, String label, IconData icon) {
     return GestureDetector(
       onTap: () => _openUrl(context, url),
       child: Container(
         margin: const EdgeInsets.only(bottom: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: const Color(0xFFFF6B6B).withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFFFF6B6B)),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFFF6B6B), width: 1.5),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: const Color(0xFFFF6B6B), size: 16),
-            const SizedBox(width: 8),
+            Icon(icon, color: const Color(0xFFFF6B6B), size: 18),
+            const SizedBox(width: 10),
             Expanded(
               child: Text(
                 label,
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 15,
                   color: Color(0xFFFF6B6B),
                   fontWeight: FontWeight.w600,
                 ),
@@ -552,11 +629,11 @@ class IgChatDetailScreen extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             const Icon(
               Icons.open_in_new,
               color: Color(0xFFFF6B6B),
-              size: 14,
+              size: 16,
             ),
           ],
         ),

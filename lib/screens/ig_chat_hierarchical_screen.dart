@@ -24,7 +24,10 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
     return Consumer<ChatProvider>(
       builder: (context, chatProvider, child) {
         if (!chatProvider.hasChatData) {
-          return _buildEmptyState();
+          return Scaffold(
+            backgroundColor: const Color(0xFFFFF8F7),
+            body: _buildEmptyState(),
+          );
         }
 
         final messagesByYear = chatProvider.getMessagesByYear();
@@ -42,9 +45,10 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                         : _selectedYear != null
                             ? 'Chat $_selectedYear ❤️'
                             : 'Our Love Messages 💝',
-                    style: GoogleFonts.dancingScript(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFFF6B6B),
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -52,6 +56,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
               ],
             ),
             backgroundColor: const Color(0xFFFFF8F7),
+            elevation: 0,
             leading: _selectedMonth != null || _selectedYear != null
                 ? IconButton(
                     icon:
@@ -69,12 +74,25 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                 : null,
             actions: [
               IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete, color: Color(0xFFFF6B6B)),
                 onPressed: () => _showClearDialog(context),
               ),
             ],
           ),
-          body: _buildContent(context, chatProvider, messagesByYear),
+          backgroundColor: const Color(0xFFFFF8F7),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFFF8F7),
+                  Color(0xFFFFF0F5),
+                ],
+              ),
+            ),
+            child: _buildContent(context, chatProvider, messagesByYear),
+          ),
         );
       },
     );
@@ -187,7 +205,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.pink.withOpacity(0.3),
+              color: const Color(0xFFFF6B6B).withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 3,
               offset: const Offset(0, 4),
@@ -228,7 +246,6 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                       fontSize: 32,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
-                      fontFamily: 'DancingScript',
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -322,7 +339,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.pink.withOpacity(0.2),
+              color: const Color(0xFFFFB6C1).withOpacity(0.3),
               blurRadius: 10,
               spreadRadius: 2,
               offset: const Offset(0, 3),
@@ -365,7 +382,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF333333),
+                            color: Colors.white,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -379,7 +396,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                         '$messageCount messages',
                         style: const TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF666666),
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -389,7 +406,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.6),
+                          color: Colors.white.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: const Row(
@@ -398,14 +415,14 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                             Icon(
                               Icons.calendar_today,
                               size: 14,
-                              color: Color(0xFFFF6B6B),
+                              color: Colors.white,
                             ),
                             SizedBox(width: 4),
                             Text(
                               'View Days',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Color(0xFFFF6B6B),
+                                color: Colors.white,
                               ),
                             ),
                           ],
@@ -468,14 +485,14 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: const Color(0xFFFFB6C1).withOpacity(0.2),
               blurRadius: 8,
               spreadRadius: 1,
               offset: const Offset(0, 2),
             ),
           ],
           border: Border.all(
-            color: const Color(0xFFFFB6C1).withOpacity(0.5),
+            color: const Color(0xFFFFB6C1).withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -486,8 +503,22 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B6B),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFF6B6B),
+                    const Color(0xFFFF8E8E),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF6B6B).withOpacity(0.3),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
               ),
               child: Center(
                 child: Text(
