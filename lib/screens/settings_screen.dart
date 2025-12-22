@@ -12,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final memoryProvider = context.read<MemoryProvider>();
+    final chatProvider = context.read<ChatProvider>();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -121,6 +122,10 @@ class SettingsScreen extends StatelessWidget {
               _buildInfoItem(
                 'Version',
                 '1.0.5',
+              ),
+              _buildInfoItem(
+                'Chat Messages',
+                '${chatProvider.messages.length}',
               ),
               _buildInfoItem(
                 'Developed with',
