@@ -116,7 +116,10 @@ class IgChatDetailScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.pink.withOpacity(0.1),
+                        color:
+                            const Color.fromARGB(255, 255, 157, 157).withValues(
+                          alpha: 1,
+                        ),
                         blurRadius: 8,
                         spreadRadius: 1,
                         offset: const Offset(0, 2),
@@ -156,7 +159,9 @@ class IgChatDetailScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF6B6B).withOpacity(0.3),
+                    color: const Color(0xFFFF6B6B).withValues(
+                      alpha: 1,
+                    ),
                     blurRadius: 4,
                     spreadRadius: 1,
                   ),
@@ -412,9 +417,13 @@ class IgChatDetailScreen extends StatelessWidget {
   }
 
   Widget _buildMessageContent(BuildContext context, ChatMessage message) {
+    final isCurrentUser = message.senderName.contains('Chimdee');
     final content = message.content;
     final hasPhotos = message.photos.isNotEmpty;
     final hasShare = message.hasShareLink;
+
+    // Get text color based on whether it's current user's message
+    final textColor = isCurrentUser ? Colors.white : Colors.black;
 
     // Handle share/attachment messages
     if ((content.contains('You sent an attachment') ||
@@ -435,6 +444,7 @@ class IgChatDetailScreen extends StatelessWidget {
               Icons.play_circle_filled,
               shareText,
               shareOwner,
+              isCurrentUser: isCurrentUser,
             ),
           if (message.isInstagramPostShare)
             _buildShareChip(
@@ -444,6 +454,7 @@ class IgChatDetailScreen extends StatelessWidget {
               Icons.image,
               shareText,
               shareOwner,
+              isCurrentUser: isCurrentUser,
             ),
           if (!message.isInstagramReelShare &&
               !message.isInstagramPostShare &&
@@ -455,6 +466,7 @@ class IgChatDetailScreen extends StatelessWidget {
               Icons.link,
               shareText,
               shareOwner,
+              isCurrentUser: isCurrentUser,
             ),
 
           // Show reactions if any
@@ -463,9 +475,9 @@ class IgChatDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 shareText!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF555555),
+                  color: isCurrentUser ? Colors.white70 : Color(0xFF555555),
                 ),
               ),
             ),
@@ -488,6 +500,7 @@ class IgChatDetailScreen extends StatelessWidget {
               link,
               '🎬 Instagram Reel',
               Icons.play_circle_filled,
+              isCurrentUser: isCurrentUser,
             ),
           for (final link in instagramLinks)
             _buildLinkChip(
@@ -495,6 +508,7 @@ class IgChatDetailScreen extends StatelessWidget {
               link,
               '📱 Instagram Post',
               Icons.image,
+              isCurrentUser: isCurrentUser,
             ),
           if (content
               .replaceAll(reelLinks.join(''), '')
@@ -506,7 +520,10 @@ class IgChatDetailScreen extends StatelessWidget {
                   .replaceAll(reelLinks.join(''), '')
                   .replaceAll(instagramLinks.join(''), '')
                   .trim(),
-              style: const TextStyle(fontSize: 16),
+              style: TextStyle(
+                fontSize: 16,
+                color: textColor,
+              ),
             ),
         ],
       );
@@ -519,15 +536,18 @@ class IgChatDetailScreen extends StatelessWidget {
         children: [
           Icon(
             content.contains('Liked') ? Icons.favorite : Icons.emoji_emotions,
-            color: content.contains('Liked') ? Color(0xFFFF6B6B) : Colors.amber,
+            color: content.contains('Liked')
+                ? (isCurrentUser ? Colors.white : Color(0xFFFF6B6B))
+                : (isCurrentUser ? Colors.white : Colors.amber),
             size: 16,
           ),
           const SizedBox(width: 6),
           Text(
             content,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontStyle: FontStyle.italic,
+              color: textColor,
             ),
           ),
         ],
@@ -538,15 +558,18 @@ class IgChatDetailScreen extends StatelessWidget {
     else if (content.trim().isEmpty && hasPhotos) {
       return Row(
         children: [
-          const Icon(
+          Icon(
             Icons.photo,
-            color: Color(0xFFFF6B6B),
+            color: isCurrentUser ? Colors.white70 : Color(0xFFFF6B6B),
             size: 16,
           ),
           const SizedBox(width: 6),
-          const Text(
+          Text(
             '📷 Photo',
-            style: TextStyle(fontSize: 16),
+            style: TextStyle(
+              fontSize: 16,
+              color: textColor,
+            ),
           ),
         ],
       );
@@ -555,7 +578,10 @@ class IgChatDetailScreen extends StatelessWidget {
     // Default text display
     return Text(
       content,
-      style: const TextStyle(fontSize: 16),
+      style: TextStyle(
+        fontSize: 16,
+        color: textColor,
+      ),
     );
   }
 
@@ -565,45 +591,60 @@ class IgChatDetailScreen extends StatelessWidget {
     String label,
     IconData icon,
     String? description,
-    String? owner,
-  ) {
+    String? owner, {
+    required bool isCurrentUser,
+  }) {
     return GestureDetector(
       onTap: () => _openUrl(context, url),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF8F7),
+          color: isCurrentUser
+              ? Colors.white.withOpacity(0.2)
+              : const Color(0xFFFFF8F7),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFFFB6C1), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.pink.withOpacity(0.1),
-              blurRadius: 6,
-              spreadRadius: 1,
-            ),
-          ],
+          border: Border.all(
+            color: isCurrentUser
+                ? Colors.white.withOpacity(0.5)
+                : const Color(0xFFFFB6C1),
+            width: 1.5,
+          ),
+          boxShadow: isCurrentUser
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.pink.withOpacity(0.1),
+                    blurRadius: 6,
+                    spreadRadius: 1,
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(icon, color: const Color(0xFFFF6B6B), size: 20),
+                Icon(icon,
+                    color:
+                        isCurrentUser ? Colors.white : const Color(0xFFFF6B6B),
+                    size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Color(0xFFFF6B6B),
+                      color: isCurrentUser
+                          ? Colors.white
+                          : const Color(0xFFFF6B6B),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.open_in_new,
-                  color: Color(0xFFFF6B6B),
+                  color: isCurrentUser ? Colors.white : const Color(0xFFFF6B6B),
                   size: 16,
                 ),
               ],
@@ -613,9 +654,9 @@ class IgChatDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8, left: 30),
                 child: Text(
                   description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF555555),
+                    color: isCurrentUser ? Colors.white70 : Color(0xFF555555),
                   ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
@@ -628,7 +669,8 @@ class IgChatDetailScreen extends StatelessWidget {
                   'From: $owner',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color:
+                        isCurrentUser ? Colors.white60 : Colors.grey.shade600,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -640,28 +682,42 @@ class IgChatDetailScreen extends StatelessWidget {
   }
 
   Widget _buildLinkChip(
-      BuildContext context, String url, String label, IconData icon) {
+    BuildContext context,
+    String url,
+    String label,
+    IconData icon, {
+    required bool isCurrentUser,
+  }) {
     return GestureDetector(
       onTap: () => _openUrl(context, url),
       child: Container(
         margin: const EdgeInsets.only(bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFFF6B6B).withOpacity(0.1),
+          color: isCurrentUser
+              ? Colors.white.withOpacity(0.2)
+              : const Color(0xFFFF6B6B).withOpacity(0.1),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: const Color(0xFFFF6B6B), width: 1.5),
+          border: Border.all(
+            color: isCurrentUser
+                ? Colors.white.withOpacity(0.5)
+                : const Color(0xFFFF6B6B),
+            width: 1.5,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: const Color(0xFFFF6B6B), size: 18),
+            Icon(icon,
+                color: isCurrentUser ? Colors.white : const Color(0xFFFF6B6B),
+                size: 18),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
-                  color: Color(0xFFFF6B6B),
+                  color: isCurrentUser ? Colors.white : const Color(0xFFFF6B6B),
                   fontWeight: FontWeight.w600,
                 ),
                 maxLines: 1,
@@ -669,20 +725,15 @@ class IgChatDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Icon(
+            Icon(
               Icons.open_in_new,
-              color: Color(0xFFFF6B6B),
+              color: isCurrentUser ? Colors.white : const Color(0xFFFF6B6B),
               size: 16,
             ),
           ],
         ),
       ),
     );
-  }
-
-  List<String> _extractAllUrls(String text) {
-    final urlRegex = RegExp(r'https?://[^\s]+');
-    return urlRegex.allMatches(text).map((m) => m.group(0)!).toList();
   }
 
   List<String> _extractReelLinks(String text) {
