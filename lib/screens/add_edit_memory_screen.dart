@@ -368,7 +368,7 @@ class _AddEditMemoryScreenState extends State<AddEditMemoryScreen> {
                 ),
                 subtitle: const Text('Special memories get golden highlights'),
                 value: _isMilestone,
-                activeColor: const Color(0xFFFF6B6B),
+                activeThumbColor: const Color(0xFFFF6B6B),
                 onChanged: (value) {
                   setState(() {
                     _isMilestone = value;

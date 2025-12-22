@@ -509,7 +509,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('$featureName'),
+          title: Text(featureName),
           content: Text('$featureName feature coming soon!'),
           actions: [
             TextButton(
