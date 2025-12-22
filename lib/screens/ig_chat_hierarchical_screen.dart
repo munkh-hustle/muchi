@@ -1,6 +1,5 @@
 // lib/screens/ig_chat_hierarchical_screen.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/models/chat_message.dart';
 import 'package:muchi/screens/ig_chat_detail_screen.dart';
 import 'package:muchi/screens/ig_chat_screen.dart';

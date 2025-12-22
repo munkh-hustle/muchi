@@ -102,30 +102,7 @@ class ChatMessage {
     }
   }
 
-  static DateTime _parseTimestamp(dynamic timestampMs) {
-    try {
-      if (timestampMs is int) {
-        return DateTime.fromMillisecondsSinceEpoch(timestampMs);
-      } else if (timestampMs is String) {
-        return DateTime.fromMillisecondsSinceEpoch(int.parse(timestampMs));
-      } else {
-        return DateTime.now();
-      }
-    } catch (e) {
-      return DateTime.now();
-    }
-  }
 
-  static List<String> _parsePhotos(dynamic photosData) {
-    if (photosData == null) return [];
-    if (photosData is List) {
-      return photosData
-          .map((p) => p['uri']?.toString() ?? '')
-          .where((uri) => uri.isNotEmpty)
-          .toList();
-    }
-    return [];
-  }
 
   static String _safeString(String input) {
     if (input.isEmpty) return input;

@@ -210,7 +210,6 @@ class IgChatDetailScreen extends StatelessWidget {
       List<String> photoPaths, // Add this parameter
       int total) {
     // Extract filename from path
-    final filename = photoPath.split('/').last;
     final assetPath = 'assets/$photoPath';
 
     return GestureDetector(
@@ -380,62 +379,6 @@ class IgChatDetailScreen extends StatelessWidget {
     );
   }
 
-  void _showFullScreenImage(BuildContext context, String assetPath) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(0),
-        child: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            color: Colors.black.withOpacity(0.9),
-            child: Stack(
-              children: [
-                // Close button
-                Positioned(
-                  top: 40,
-                  right: 20,
-                  child: IconButton(
-                    icon:
-                        const Icon(Icons.close, color: Colors.white, size: 30),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-
-                // Single image viewer
-                Center(
-                  child: InteractiveViewer(
-                    panEnabled: true,
-                    minScale: 0.5,
-                    maxScale: 3,
-                    child: FutureBuilder(
-                      future: _loadImage(assetPath),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data == true) {
-                          return Image.asset(
-                            assetPath,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _buildFullScreenPlaceholder();
-                            },
-                          );
-                        } else {
-                          return _buildFullScreenPlaceholder();
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildFullScreenPlaceholder() {
     return Center(
