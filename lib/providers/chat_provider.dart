@@ -28,13 +28,24 @@ class ChatProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> importChatFromJson(String jsonString) async {
+  Future<void> importChatFromJson(String jsonString,
+      {bool merge = false}) async {
     try {
-      await _parseChatData(jsonString);
+      // Parse the new messages
+      await _parseChatData(jsonString, merge: merge);
 
       // Save to local storage
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('chat_data', jsonString);
+      final existingJson = prefs.getString('chat_data');
+
+      if (merge && existingJson != null && existingJson.isNotEmpty) {
+        // We need to merge with existing data
+        final merged = _mergeChatData(existingJson, jsonString);
+        await prefs.setString('chat_data', merged);
+      } else {
+        // Replace existing data
+        await prefs.setString('chat_data', jsonString);
+      }
 
       _hasChatData = true;
       notifyListeners();
@@ -43,20 +54,21 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _parseChatData(String jsonString) async {
+  Future<void> _parseChatData(String jsonString, {bool merge = false}) async {
     try {
-      print('Parsing chat data...');
+      print('Parsing chat data (merge: $merge)...');
       final jsonData = jsonDecode(jsonString);
 
       List<dynamic> messagesList;
-      List<String> participantsList = ['User 1', 'User 2'];
+      List<String> participantsList =
+          _participants; // Keep existing participants if merging
 
-      // Handle different JSON structures
+      // Handle different JSON structures (same as before)
       if (jsonData['messages'] != null) {
         messagesList = jsonData['messages'];
 
-        // Get participants
-        if (jsonData['participants'] != null &&
+        if (!merge &&
+            jsonData['participants'] != null &&
             jsonData['participants'] is List) {
           participantsList =
               (jsonData['participants'] as List).map<String>((p) {
@@ -69,8 +81,8 @@ class ChatProvider extends ChangeNotifier {
           jsonData['conversation']['messages'] != null) {
         messagesList = jsonData['conversation']['messages'];
 
-        // Get participants
-        if (jsonData['conversation']['participants'] != null &&
+        if (!merge &&
+            jsonData['conversation']['participants'] != null &&
             jsonData['conversation']['participants'] is List) {
           participantsList = (jsonData['conversation']['participants'] as List)
               .map<String>((p) {
@@ -83,12 +95,10 @@ class ChatProvider extends ChangeNotifier {
         throw Exception('Invalid chat JSON structure');
       }
 
-      print(
-          'Found ${messagesList.length} messages from ${participantsList.join(' & ')}');
+      print('Found ${messagesList.length} messages');
 
-      // Parse messages with error handling
+      // Parse messages
       final List<ChatMessage> parsedMessages = [];
-      int errorCount = 0;
 
       for (int i = 0; i < messagesList.length; i++) {
         try {
@@ -98,35 +108,47 @@ class ChatProvider extends ChangeNotifier {
             parsedMessages.add(chatMessage);
           }
         } catch (e) {
-          errorCount++;
           print('Error parsing message $i: $e');
-
-          // Skip problematic messages instead of crashing
           continue;
         }
       }
 
-      if (errorCount > 0) {
-        print(
-            'Skipped $errorCount problematic messages out of ${messagesList.length}');
+      if (merge) {
+        // Merge with existing messages
+        final existingMessages = List<ChatMessage>.from(_messages);
+        existingMessages.addAll(parsedMessages);
+
+        // Remove duplicates based on timestamp and content
+        final uniqueMessages = <ChatMessage>[];
+        final seen = <String>{};
+
+        for (final msg in existingMessages) {
+          final key = '${msg.timestamp.millisecondsSinceEpoch}-${msg.content}';
+          if (!seen.contains(key)) {
+            seen.add(key);
+            uniqueMessages.add(msg);
+          }
+        }
+
+        // Sort by timestamp (newest first)
+        uniqueMessages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+
+        _messages = uniqueMessages;
+      } else {
+        // Replace existing messages
+        _messages = parsedMessages;
+        _participants = participantsList;
       }
 
-      // Sort messages by timestamp (newest first)
-      parsedMessages.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-
-      _messages = parsedMessages;
-      _participants = participantsList;
       _hasChatData = _messages.isNotEmpty;
-
-      print('Successfully parsed ${_messages.length} messages');
+      print('Total messages after import: ${_messages.length}');
     } catch (e) {
       print('Error parsing chat data: $e');
-
-      // Clear data on error
-      _messages.clear();
-      _participants.clear();
-      _hasChatData = false;
-
+      if (!merge) {
+        _messages.clear();
+        _participants.clear();
+        _hasChatData = false;
+      }
       rethrow;
     }
   }
@@ -196,5 +218,68 @@ class ChatProvider extends ChangeNotifier {
 
     return Map.fromEntries(
         dayMap.entries.toList()..sort((a, b) => b.key.compareTo(a.key)));
+  }
+
+  String _mergeChatData(String existingJson, String newJson) {
+    try {
+      final existingData = jsonDecode(existingJson);
+      final newData = jsonDecode(newJson);
+
+      List<dynamic> existingMessages = [];
+      List<dynamic> newMessages = [];
+
+      // Extract messages from both JSONs
+      if (existingData['messages'] != null) {
+        existingMessages = existingData['messages'];
+      } else if (existingData['conversation'] != null &&
+          existingData['conversation']['messages'] != null) {
+        existingMessages = existingData['conversation']['messages'];
+      }
+
+      if (newData['messages'] != null) {
+        newMessages = newData['messages'];
+      } else if (newData['conversation'] != null &&
+          newData['conversation']['messages'] != null) {
+        newMessages = newData['conversation']['messages'];
+      }
+
+      // Combine messages and remove duplicates
+      final allMessages = [...existingMessages, ...newMessages];
+      final uniqueMessages = <Map<String, dynamic>>[];
+      final seen = <String>{};
+
+      for (final msg in allMessages) {
+        final timestamp = msg['timestamp_ms']?.toString() ??
+            msg['timestamp']?.toString() ??
+            '';
+        final content = msg['content']?.toString() ?? '';
+        final key = '$timestamp-$content';
+
+        if (!seen.contains(key)) {
+          seen.add(key);
+          uniqueMessages.add(msg);
+        }
+      }
+
+      // Sort by timestamp (oldest to newest for JSON structure)
+      uniqueMessages.sort((a, b) {
+        final timeA = a['timestamp_ms'] ?? a['timestamp'] ?? 0;
+        final timeB = b['timestamp_ms'] ?? b['timestamp'] ?? 0;
+        return (timeA as int).compareTo(timeB as int);
+      });
+
+      // Return merged JSON
+      return jsonEncode({
+        'messages': uniqueMessages,
+        'participants': existingData['participants'] ??
+            newData['participants'] ??
+            ['User 1', 'User 2'],
+        'merge_date': DateTime.now().toIso8601String(),
+        'total_messages': uniqueMessages.length,
+      });
+    } catch (e) {
+      print('Error merging chat data: $e');
+      return existingJson; // Return existing data if merge fails
+    }
   }
 }

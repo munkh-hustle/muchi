@@ -1,5 +1,6 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
+import 'package:muchi/providers/chat_provider.dart';
 import 'package:muchi/screens/ig_chat_screen.dart';
 import 'package:muchi/services/data_service.dart';
 import 'package:provider/provider.dart'; // Add this import
@@ -22,6 +23,42 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           // Data Management Section
+          _buildSection(
+            title: 'Chat Management',
+            icon: Icons.chat,
+            color: const Color(0xFF9C27B0),
+            children: [
+              _buildSettingItem(
+                icon: Icons.file_upload,
+                title: 'Import Single Chat File',
+                subtitle: 'Import one JSON file',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const IgChatScreen(),
+                    ),
+                  );
+                },
+                color: const Color(0xFF9C27B0),
+              ),
+              _buildSettingItem(
+                icon: Icons.merge,
+                title: 'Bulk Import Chat Files',
+                subtitle: 'Merge multiple JSON files',
+                onTap: () => _showBulkImportDialog(context),
+                color: const Color(0xFF673AB7),
+              ),
+              _buildSettingItem(
+                icon: Icons.delete,
+                title: 'Clear Chat Data',
+                subtitle: 'Delete all chat messages',
+                onTap: () => _showClearChatDialog(context),
+                color: Colors.red,
+              ),
+            ],
+          ),
           _buildSection(
             title: 'Data Management',
             icon: Icons.data_usage,
@@ -220,8 +257,9 @@ class SettingsScreen extends StatelessWidget {
       builder: (context) => AlertDialog(
         title: const Text('Bulk Import Instagram Chat'),
         content: const Text(
-          'Select all your message_*.json files from the Instagram data folder. '
-          'The app will merge them into a single conversation.',
+          'Select multiple message_*.json files from your Instagram data folder. '
+          'The app will merge them into a single conversation.\n\n'
+          'Note: Make sure all files are from the same conversation.',
         ),
         actions: [
           TextButton(
@@ -229,23 +267,60 @@ class SettingsScreen extends StatelessWidget {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () async {
+            onPressed: () {
               Navigator.pop(context);
-              // Navigate to chat screen with bulk import option
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => IgChatScreen(),
+                  builder: (context) => const IgChatScreen(),
                 ),
-              ).then((_) {
-                // Trigger bulk import
-                Future.delayed(Duration(milliseconds: 500), () {
-                  // You might want to pass a parameter or use a different approach
-                  // This is just a conceptual example
-                });
-              });
+              );
             },
             child: const Text('Start Bulk Import'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showClearChatDialog(BuildContext context) {
+    final chatProvider = context.read<ChatProvider>();
+
+    if (!chatProvider.hasChatData) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No chat data to clear'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Chat Data'),
+        content: Text(
+          'Are you sure you want to delete ${chatProvider.messages.length} messages?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              chatProvider.clearChatData();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Chat data cleared'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Clear'),
           ),
         ],
       ),

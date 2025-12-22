@@ -42,32 +42,30 @@ class _IgChatScreenState extends State<IgChatScreen> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
-        allowMultiple: false, // Single file only
+        allowMultiple: true, // Allow multiple files
       );
 
       if (result == null || result.files.isEmpty) return;
 
-      final file = File(result.files.single.path!);
-      final jsonString = await file.readAsString();
-
-      // Validate JSON structure
-      final jsonData = jsonDecode(jsonString);
-
-      if (jsonData['messages'] == null &&
-          (jsonData['conversation'] == null ||
-              jsonData['conversation']['messages'] == null)) {
-        throw Exception('Invalid Instagram chat JSON file');
-      }
-
       final chatProvider = context.read<ChatProvider>();
-      await chatProvider.importChatFromJson(jsonString);
+      final hasExistingData = chatProvider.hasChatData;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Chat imported successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (hasExistingData && result.files.length > 1) {
+        // Ask user if they want to merge or replace
+        final choice = await _showImportChoiceDialog(context);
+        if (choice == null) return;
+
+        await _processFiles(result.files, chatProvider, choice == 'merge');
+      } else if (hasExistingData) {
+        // Single file with existing data - ask
+        final choice = await _showImportChoiceDialog(context);
+        if (choice == null) return;
+
+        await _processFiles(result.files, chatProvider, choice == 'merge');
+      } else {
+        // No existing data - just import
+        await _processFiles(result.files, chatProvider, false);
+      }
     } catch (e) {
       print('Import error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,6 +75,55 @@ class _IgChatScreenState extends State<IgChatScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _processFiles(
+      List<PlatformFile> files, ChatProvider chatProvider, bool merge) async {
+    int totalImported = 0;
+
+    for (final file in files) {
+      try {
+        final jsonString = await File(file.path!).readAsString();
+        await chatProvider.importChatFromJson(jsonString, merge: merge);
+        totalImported++;
+      } catch (e) {
+        print('Error processing file ${file.name}: $e');
+      }
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:
+            Text('Successfully imported $totalImported/${files.length} files!'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  Future<String?> _showImportChoiceDialog(BuildContext context) {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Import Chat Data'),
+        content: const Text(
+          'You already have chat data. What would you like to do?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'replace'),
+            child: const Text('Replace'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'merge'),
+            child: const Text('Merge'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _formatTime(DateTime timestamp) {
