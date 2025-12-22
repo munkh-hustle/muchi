@@ -379,7 +379,6 @@ class IgChatDetailScreen extends StatelessWidget {
     );
   }
 
-
   Widget _buildFullScreenPlaceholder() {
     return Center(
       child: Column(
@@ -415,13 +414,68 @@ class IgChatDetailScreen extends StatelessWidget {
   Widget _buildMessageContent(BuildContext context, ChatMessage message) {
     final content = message.content;
     final hasPhotos = message.photos.isNotEmpty;
+    final hasShare = message.hasShareLink;
 
-    // Check for Instagram Reel/Post links
+    // Handle share/attachment messages
+    if ((content.contains('You sent an attachment') ||
+            content.contains('Sent an attachment')) &&
+        hasShare) {
+      final shareLink = message.shareLink;
+      final shareText = message.shareText;
+      final shareOwner = message.shareOwner;
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (message.isInstagramReelShare)
+            _buildShareChip(
+              context,
+              shareLink!,
+              '🎬 Instagram Reel',
+              Icons.play_circle_filled,
+              shareText,
+              shareOwner,
+            ),
+          if (message.isInstagramPostShare)
+            _buildShareChip(
+              context,
+              shareLink!,
+              '📱 Instagram Post',
+              Icons.image,
+              shareText,
+              shareOwner,
+            ),
+          if (!message.isInstagramReelShare &&
+              !message.isInstagramPostShare &&
+              hasShare)
+            _buildShareChip(
+              context,
+              shareLink!,
+              '🔗 Shared Link',
+              Icons.link,
+              shareText,
+              shareOwner,
+            ),
+
+          // Show reactions if any
+          if (shareText?.isNotEmpty == true)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                shareText!,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF555555),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+
+    // Check for Instagram Reel/Post links in content
     final reelLinks = _extractReelLinks(content);
     final instagramLinks = _extractInstagramLinks(content);
-
-    // Check for general URLs/attachments
-    final allUrls = _extractAllUrls(content);
 
     // Handle Instagram links first
     if (reelLinks.isNotEmpty || instagramLinks.isNotEmpty) {
@@ -458,44 +512,6 @@ class IgChatDetailScreen extends StatelessWidget {
       );
     }
 
-    // Handle attachment messages
-    else if (content.contains('You sent an attachment') ||
-        content.contains('Sent an attachment') ||
-        content.contains('sent an attachment')) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (allUrls.isNotEmpty)
-            for (final url in allUrls)
-              _buildLinkChip(
-                context,
-                url,
-                '📎 Attachment',
-                Icons.attachment,
-              ),
-          if (allUrls.isEmpty)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.attachment,
-                  color: Colors.grey,
-                  size: 16,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Attachment (no link available)',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-              ],
-            ),
-        ],
-      );
-    }
-
     // Handle liked/reacted messages
     else if (content.contains('Liked a message') ||
         content.contains('Reacted')) {
@@ -503,7 +519,7 @@ class IgChatDetailScreen extends StatelessWidget {
         children: [
           Icon(
             content.contains('Liked') ? Icons.favorite : Icons.emoji_emotions,
-            color: content.contains('Liked') ? Colors.red : Colors.amber,
+            color: content.contains('Liked') ? Color(0xFFFF6B6B) : Colors.amber,
             size: 16,
           ),
           const SizedBox(width: 6),
@@ -524,13 +540,13 @@ class IgChatDetailScreen extends StatelessWidget {
         children: [
           const Icon(
             Icons.photo,
-            color: Colors.green,
+            color: Color(0xFFFF6B6B),
             size: 16,
           ),
           const SizedBox(width: 6),
-          Text(
+          const Text(
             '📷 Photo',
-            style: const TextStyle(fontSize: 16),
+            style: TextStyle(fontSize: 16),
           ),
         ],
       );
@@ -540,6 +556,86 @@ class IgChatDetailScreen extends StatelessWidget {
     return Text(
       content,
       style: const TextStyle(fontSize: 16),
+    );
+  }
+
+  Widget _buildShareChip(
+    BuildContext context,
+    String url,
+    String label,
+    IconData icon,
+    String? description,
+    String? owner,
+  ) {
+    return GestureDetector(
+      onTap: () => _openUrl(context, url),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF8F7),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color(0xFFFFB6C1), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.pink.withOpacity(0.1),
+              blurRadius: 6,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: const Color(0xFFFF6B6B), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFFFF6B6B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.open_in_new,
+                  color: Color(0xFFFF6B6B),
+                  size: 16,
+                ),
+              ],
+            ),
+            if (description != null && description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 30),
+                child: Text(
+                  description,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF555555),
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            if (owner != null && owner.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, left: 30),
+                child: Text(
+                  'From: $owner',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -584,7 +680,6 @@ class IgChatDetailScreen extends StatelessWidget {
     );
   }
 
-// Update the URL extraction method to catch all URLs
   List<String> _extractAllUrls(String text) {
     final urlRegex = RegExp(r'https?://[^\s]+');
     return urlRegex.allMatches(text).map((m) => m.group(0)!).toList();

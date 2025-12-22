@@ -1,6 +1,8 @@
 // lib/models/chat_message.dart
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 class ChatMessage {
   final String senderName;
   final DateTime timestamp;
@@ -8,6 +10,7 @@ class ChatMessage {
   final bool isGeoblocked;
   final bool isUnsent;
   final List<String> photos;
+  final Map<String, dynamic>? share;
 
   ChatMessage({
     required this.senderName,
@@ -16,6 +19,7 @@ class ChatMessage {
     required this.isGeoblocked,
     required this.isUnsent,
     this.photos = const [],
+    this.share,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -80,6 +84,16 @@ class ChatMessage {
         photos = [];
       }
 
+      // Parse share data
+      Map<String, dynamic>? shareData;
+      try {
+        if (json['share'] != null && json['share'] is Map) {
+          shareData = Map<String, dynamic>.from(json['share']);
+        }
+      } catch (e) {
+        shareData = null;
+      }
+
       return ChatMessage(
         senderName: senderName,
         timestamp: timestamp,
@@ -87,10 +101,12 @@ class ChatMessage {
         isGeoblocked: json['is_geoblocked_for_viewer'] ?? false,
         isUnsent: json['is_unsent_image_by_messenger_kid_parent'] ?? false,
         photos: photos,
+        share: shareData, // Add this
       );
     } catch (e) {
-      print('Error creating ChatMessage from JSON: $e');
-      // Return a safe default message
+      if (kDebugMode) {
+        print('Error creating ChatMessage from JSON: $e');
+      }
       return ChatMessage(
         senderName: 'Error',
         timestamp: DateTime.now(),
@@ -101,8 +117,6 @@ class ChatMessage {
       );
     }
   }
-
-
 
   static String _safeString(String input) {
     if (input.isEmpty) return input;
@@ -161,18 +175,49 @@ class ChatMessage {
   }
 
   List<String> get instagramReelLinks {
-    return instagramLinks
+    final links = instagramLinks
         .where((link) => link.contains('instagram.com/reel/'))
         .toList();
+
+    if (isInstagramReelShare && shareLink != null) {
+      links.add(shareLink!);
+    }
+
+    return links;
   }
 
   List<String> get instagramPostLinks {
-    return instagramLinks
+    final links = instagramLinks
         .where((link) => link.contains('instagram.com/p/'))
         .toList();
+
+    if (isInstagramPostShare && shareLink != null) {
+      links.add(shareLink!);
+    }
+
+    return links;
+  }
+
+  List<String> get allLinks {
+    final links = instagramLinks;
+    if (hasShareLink && shareLink != null) {
+      links.add(shareLink!);
+    }
+    return links;
   }
 
   String get displayContent {
+    if (content.contains('You sent an attachment') && hasShareLink) {
+      if (isInstagramReelShare) {
+        return 'Shared an Instagram Reel';
+      } else if (isInstagramPostShare) {
+        return 'Shared an Instagram Post';
+      } else if (hasInstagramShare) {
+        return 'Shared an Instagram link';
+      }
+      return 'Shared a link';
+    }
+
     if (hasInstagramReel || hasInstagramPost) {
       // Remove Instagram links from display text
       String displayText = content;
@@ -187,7 +232,8 @@ class ChatMessage {
   bool get hasAttachment {
     return content.contains('You sent an attachment') ||
         content.contains('Sent an attachment') ||
-        photos.isNotEmpty;
+        photos.isNotEmpty ||
+        hasShareLink;
   }
 
   String get attachmentType {
@@ -201,5 +247,38 @@ class ChatMessage {
     if (content.contains('.mp4') || content.contains('.mov')) return 'video';
     if (content.contains('.pdf')) return 'document';
     return 'file';
+  }
+
+  bool get hasShareLink {
+    return share != null && share!['link'] != null;
+  }
+
+  String? get shareLink {
+    return hasShareLink ? share!['link'].toString() : null;
+  }
+
+  String? get shareText {
+    return share != null && share!['share_text'] != null
+        ? share!['share_text'].toString()
+        : null;
+  }
+
+  String? get shareOwner {
+    return share != null && share!['original_content_owner'] != null
+        ? share!['original_content_owner'].toString()
+        : null;
+  }
+
+  bool get hasInstagramShare {
+    return hasShareLink && (shareLink?.contains('instagram.com') ?? false);
+  }
+
+  bool get isInstagramReelShare {
+    return hasShareLink &&
+        (shareLink?.contains('instagram.com/reel/') ?? false);
+  }
+
+  bool get isInstagramPostShare {
+    return hasShareLink && (shareLink?.contains('instagram.com/p/') ?? false);
   }
 }

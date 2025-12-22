@@ -426,8 +426,10 @@ class _IgChatScreenState extends State<IgChatScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isCurrentUser
-                                  ? const Color(0xFFFF6B6B)
-                                  : Colors.white,
+                                  ? const Color(
+                                      0xFFFF6B6B) // Current user: pink background
+                                  : Colors
+                                      .white, // Other user: white background
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(20),
                                 topRight: const Radius.circular(20),
@@ -448,12 +450,13 @@ class _IgChatScreenState extends State<IgChatScreen> {
                               ],
                             ),
                             child: Text(
-                              message.content,
+                              message.displayContent,
                               style: TextStyle(
                                 fontSize: 16,
                                 color: isCurrentUser
-                                    ? Colors.white
-                                    : const Color(0xFF333333),
+                                    ? Colors.white // Current user: white text
+                                    : const Color(
+                                        0xFF333333), // Other user: dark text
                               ),
                             ),
                           ),
@@ -480,7 +483,7 @@ class _IgChatScreenState extends State<IgChatScreen> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF6B6B),
+                          color: const Color(0xFFFF6B6B), // Current user: pink
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: const Color(0xFFFF8E8E),
