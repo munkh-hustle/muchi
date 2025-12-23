@@ -213,20 +213,6 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
         ),
         child: Stack(
           children: [
-            // Year number in background (same style as month)
-            Positioned(
-              right: 10,
-              top: 10,
-              child: Text(
-                year,
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white.withOpacity(0.2),
-                ),
-              ),
-            ),
-
             // Content
             Padding(
               padding: const EdgeInsets.all(16),
