@@ -28,7 +28,7 @@ class IgChatDetailScreen extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFFFFF8F7),
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFFFF6B6B)),
+        iconTheme: const IconThemeData(color: Color(0xFFFFB6C1)),
         centerTitle: true,
       ),
       backgroundColor: const Color(0xFFFFF8F7),
@@ -84,7 +84,7 @@ class IgChatDetailScreen extends StatelessWidget {
                   message.senderName.substring(0, 1),
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFFFF6B6B),
+                    color: Color(0xFFFFB6C1),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -103,7 +103,7 @@ class IgChatDetailScreen extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color:
-                        isCurrentUser ? const Color(0xFFFF6B6B) : Colors.white,
+                        isCurrentUser ? const Color(0xFFFFB6C1) : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
@@ -117,7 +117,7 @@ class IgChatDetailScreen extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color:
-                            const Color.fromARGB(255, 255, 157, 157).withValues(
+                            const Color(0xFFFFB6C1).withValues(
                           alpha: 1,
                         ),
                         blurRadius: 8,
@@ -151,15 +151,15 @@ class IgChatDetailScreen extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B6B),
+                color: const Color(0xFFFFB6C1),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: const Color(0xFFFF8E8E),
+                  color: const Color(0xFFFFB6C1),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF6B6B).withValues(
+                    color: const Color(0xFFFFB6C1).withValues(
                       alpha: 1,
                     ),
                     blurRadius: 4,
