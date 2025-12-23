@@ -44,7 +44,7 @@ class IgChatDetailScreen extends StatelessWidget {
           ),
         ),
         child: ListView.builder(
-          reverse: true,
+          reverse: false,
           padding: const EdgeInsets.all(16),
           itemCount: messages.length,
           itemBuilder: (context, index) {
