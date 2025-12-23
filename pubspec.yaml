@@ -36,7 +36,6 @@ flutter:
   assets:
     - assets/icons/MuChi.png
     - assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/
-    - assets/your_instagram_activity/messages/inbox/chimdee_17995024886728646/photos
 
 flutter_icons:
   android: "launcher_icon"

@@ -121,7 +121,7 @@ class SettingsScreen extends StatelessWidget {
             children: [
               _buildInfoItem(
                 'Version',
-                '1.0.5',
+                '1.0.7+1',
               ),
               _buildInfoItem(
                 'Chat Messages',
