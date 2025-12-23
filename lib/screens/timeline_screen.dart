@@ -385,25 +385,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 color: const Color.fromARGB(255, 255, 123, 189),
                 onTap: () {
                   Navigator.pop(context);
-
-                  // Check if there's already chat data
-                  final chatProvider = context.read<ChatProvider>();
-                  if (chatProvider.hasChatData) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IgChatHierarchicalScreen(),
-                      ),
-                    );
-                  } else {
-                    // Show import dialog or go to import screen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const IgChatScreen(),
-                      ),
-                    );
-                  }
+                  // Directly navigate to hierarchical screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const IgChatHierarchicalScreen(),
+                    ),
+                  );
                 },
               ),
               _buildMenuItem(

@@ -197,14 +197,14 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFFFF6B6B),
-              const Color(0xFFFF8E8E),
+              const Color(0xFFFFB6C1), // Same pink as month cards
+              const Color(0xFFFFD1D9), // Same light pink as month cards
             ],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF6B6B).withOpacity(0.3),
+              color: const Color(0xFFFFB6C1).withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 3,
               offset: const Offset(0, 4),
@@ -213,23 +213,17 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
         ),
         child: Stack(
           children: [
-            // Decorative hearts
+            // Year number in background (same style as month)
             Positioned(
-              top: 10,
               right: 10,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.white.withOpacity(0.3),
-                size: 40,
-              ),
-            ),
-            Positioned(
-              bottom: 10,
-              left: 10,
-              child: Icon(
-                Icons.favorite,
-                color: Colors.white.withOpacity(0.2),
-                size: 30,
+              top: 10,
+              child: Text(
+                year,
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white.withOpacity(0.2),
+                ),
               ),
             ),
 
@@ -237,52 +231,69 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    year,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$messageCount messages',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.9),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white.withOpacity(0.8),
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'View Months',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withOpacity(0.8),
+                  Row(
+                    children: [
+                      Text(
+                        '🩷', // Calendar emoji for years
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          year,
+                          style: const TextStyle(
+                            fontSize: 28, // Larger font for years
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '$messageCount messages',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.arrow_forward,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'View Months',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -412,7 +423,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.calendar_today,
+                              Icons.arrow_forward,
                               size: 14,
                               color: Colors.white,
                             ),
@@ -480,18 +491,25 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFFFB6C1).withOpacity(0.8),
+              const Color(0xFFFFD1D9).withOpacity(0.9),
+            ],
+          ),
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFFB6C1).withOpacity(0.2),
+              color: const Color(0xFFFFB6C1).withOpacity(0.3),
               blurRadius: 8,
               spreadRadius: 1,
               offset: const Offset(0, 2),
             ),
           ],
           border: Border.all(
-            color: const Color(0xFFFFB6C1).withOpacity(0.3),
+            color: Colors.white.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -504,8 +522,8 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFFFF6B6B),
-                    const Color(0xFFFF8E8E),
+                    Colors.white,
+                    const Color(0xFFFFF0F5),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -513,7 +531,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF6B6B).withOpacity(0.3),
+                    color: const Color(0xFFFFB6C1).withOpacity(0.5),
                     blurRadius: 4,
                     spreadRadius: 1,
                   ),
@@ -525,7 +543,7 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: Color(0xFFFF6B6B),
                   ),
                 ),
               ),
@@ -533,23 +551,24 @@ class _IgChatHierarchicalScreenState extends State<IgChatHierarchicalScreen> {
             const SizedBox(height: 8),
             Text(
               dayName.substring(0, 3),
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
-                color: Colors.grey.shade600,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFB6C1).withOpacity(0.2),
+                color: Colors.white.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
                 '$messageCount',
                 style: const TextStyle(
                   fontSize: 11,
-                  color: Color(0xFFFF6B6B),
+                  color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
               ),
