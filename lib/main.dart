@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muchi/providers/chat_provider.dart';
+import 'package:muchi/providers/love_coupon_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:muchi/providers/memory_provider.dart';
 import 'package:muchi/screens/timeline_screen.dart';
@@ -21,6 +22,7 @@ class LoveDiaryApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => MemoryProvider()),
         ChangeNotifierProvider(create: (context) => ChatProvider()),
+        ChangeNotifierProvider(create: (context) => LoveCouponProvider()),
       ],
       child: MaterialApp(
         title: 'MuChi Love Diary',

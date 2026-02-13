@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:muchi/data/memory.dart';
 import 'package:muchi/screens/add_edit_memory_screen.dart';
 import 'package:muchi/screens/ig_chat_hierarchical_screen.dart';
+import 'package:muchi/screens/love_coupon_screen.dart';
 import 'package:muchi/screens/memory_detail_screen.dart';
 import 'package:muchi/screens/settings_screen.dart';
 import 'package:muchi/widgets/memory_card.dart';
@@ -393,12 +394,17 @@ class _TimelineScreenState extends State<TimelineScreen> {
                 },
               ),
               _buildMenuItem(
-                icon: Icons.calendar_month,
-                title: 'Calendar View',
-                color: const Color(0xFF4FC3F7),
+                icon: Icons.card_giftcard,
+                title: 'Love Coupon',
+                color: const Color.fromARGB(255, 157, 79,
+                    247), // Converted from your from(alpha:1, red:0.616, green:0.31, blue:0.969) which is approx #9D4FF7
                 onTap: () {
                   Navigator.pop(context);
-                  _showFeatureDialog('Calendar View');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoveCouponScreen()),
+                  );
                 },
               ),
               _buildMenuItem(

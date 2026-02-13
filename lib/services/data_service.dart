@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:muchi/data/love_coupon.dart';
+import 'package:muchi/providers/love_coupon_provider.dart';
 import 'package:muchi/providers/memory_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:muchi/data/memory.dart';
@@ -252,6 +254,138 @@ class DataService {
           content: Text('All memories have been deleted.'),
           backgroundColor: Colors.red,
         ),
+      );
+    }
+  }
+
+  static Future<void> exportCoupons(BuildContext context) async {
+    try {
+      final couponProvider = context.read<LoveCouponProvider>();
+      final coupons = couponProvider.coupons;
+
+      if (coupons.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('No coupons to export'),
+              backgroundColor: Colors.orange),
+        );
+        return;
+      }
+
+      final List<Map<String, dynamic>> exportData =
+          coupons.map((coupon) => coupon.toJson()).toList();
+
+      final jsonData = jsonEncode({
+        'app': 'MuChi',
+        'type': 'love_coupons',
+        'version': '1.0',
+        'exportDate': DateTime.now().toIso8601String(),
+        'count': coupons.length,
+        'coupons': exportData,
+      });
+
+      final directory = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final file = File('${directory.path}/muchi_coupons_$timestamp.json');
+
+      await file.writeAsString(jsonData);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'MuChi Love Coupons Backup',
+        subject:
+            'Love Coupons Backup ${DateTime.now().toString().split('.')[0]}',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Exported ${coupons.length} coupons'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Export failed: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // ── Import Love Coupons from JSON ──
+  static Future<void> importCoupons(BuildContext context) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+        allowMultiple: false,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = File(result.files.single.path!);
+      final jsonString = await file.readAsString();
+      final jsonData = jsonDecode(jsonString);
+
+      // Basic validation
+      if (jsonData['app'] != 'MuChi' || jsonData['type'] != 'love_coupons') {
+        throw Exception('This is not a valid MuChi Love Coupons backup file');
+      }
+
+      final importedCoupons = (jsonData['coupons'] as List)
+          .map((item) => LoveCoupon.fromJson(item))
+          .toList();
+
+      final provider = context.read<LoveCouponProvider>();
+
+      // Option: ask user whether to merge or replace
+      final shouldReplace = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Import Coupons'),
+          content: Text(
+            'Found ${importedCoupons.length} coupons.\n\n'
+            'Replace existing coupons or merge (keep both)?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false), // merge
+              child: const Text('Merge'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true), // replace
+              child: const Text('Replace'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancel'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldReplace == null) return;
+
+      if (shouldReplace) {
+        provider.clearAll(); // or implement a proper clear method if needed
+      }
+
+      for (final coupon in importedCoupons) {
+        // Avoid duplicates by id if merging
+        if (provider.coupons.any((c) => c.id == coupon.id)) continue;
+        await provider.addCoupon(coupon);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content:
+              Text('Imported ${importedCoupons.length} coupons successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Import failed: $e'), backgroundColor: Colors.red),
       );
     }
   }

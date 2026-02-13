@@ -1,6 +1,7 @@
 // lib/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:muchi/providers/chat_provider.dart';
+import 'package:muchi/providers/love_coupon_provider.dart';
 import 'package:muchi/screens/ig_chat_screen.dart';
 import 'package:muchi/services/data_service.dart';
 import 'package:provider/provider.dart'; // Add this import
@@ -87,25 +88,38 @@ class SettingsScreen extends StatelessWidget {
                 color: const Color(0xFFFF9800),
               ),
               _buildSettingItem(
-                icon: Icons.merge,
-                title: 'Import IG Chat',
-                subtitle: 'Import Instagram chat JSON file',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const IgChatScreen(),
-                    ),
-                  );
-                },
-                color: const Color(0xFF9C27B0),
-              ),
-              _buildSettingItem(
                 icon: Icons.delete_forever,
                 title: 'Clear All Data',
                 subtitle: 'Delete all memories (irreversible)',
                 onTap: () => DataService.clearAllData(context),
+                color: Colors.red,
+              ),
+            ],
+          ),
+          _buildSection(
+            title: 'Love Coupons',
+            icon: Icons.card_giftcard,
+            color: const Color(0xFFFF6B6B),
+            children: [
+              _buildSettingItem(
+                icon: Icons.upload_rounded,
+                title: 'Export Coupons',
+                subtitle: 'Create backup file (.json)',
+                onTap: () => DataService.exportCoupons(context),
+                color: const Color(0xFF4CAF50), // green for export
+              ),
+              _buildSettingItem(
+                icon: Icons.download_rounded,
+                title: 'Import Coupons',
+                subtitle: 'Restore from backup file',
+                onTap: () => DataService.importCoupons(context),
+                color: const Color(0xFFFF9800), // orange for import
+              ),
+              _buildSettingItem(
+                icon: Icons.delete_forever_rounded,
+                title: 'Clear All Coupons',
+                subtitle: 'Delete all love coupons permanently',
+                onTap: () => _showClearCouponsDialog(context),
                 color: Colors.red,
               ),
             ],
@@ -250,6 +264,51 @@ class SettingsScreen extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: Color(0xFFFF6B6B),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showClearCouponsDialog(BuildContext context) {
+    final couponProvider = context.read<LoveCouponProvider>();
+
+    if (couponProvider.count == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No coupons to clear'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Love Coupons'),
+        content: Text(
+          'This will permanently delete ${couponProvider.count} love coupons.\n\n'
+          'Make sure you exported them first!',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              couponProvider.clearAll();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('All love coupons cleared'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Clear All'),
           ),
         ],
       ),

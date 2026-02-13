@@ -1,11 +1,51 @@
 // lib/services/storage_service.dart
 import 'dart:convert';
+import 'package:muchi/data/love_coupon.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:muchi/data/memory.dart';
 
 class StorageService {
   static const String _memoriesKey = 'memories_data';
   static const String _currentVersion = '1.0';
+  static const String _couponsKey = 'love_coupons_data';
+
+  static Future<void> saveCoupons(List<LoveCoupon> coupons) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<Map<String, dynamic>> jsonList =
+          coupons.map((c) => c.toJson()).toList();
+      final jsonData = jsonEncode({
+        'version': _currentVersion,
+        'coupons': jsonList,
+        'lastSaved': DateTime.now().toIso8601String(),
+      });
+      await prefs.setString(_couponsKey, jsonData);
+    } catch (e) {
+      print('Error saving coupons: $e');
+      rethrow;
+    }
+  }
+
+  static Future<List<LoveCoupon>> loadCoupons() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_couponsKey);
+      if (jsonString == null || jsonString.isEmpty) {
+        return [];
+      }
+      final jsonData = jsonDecode(jsonString);
+      final List<dynamic> couponList = jsonData['coupons'];
+      return couponList.map((item) => LoveCoupon.fromJson(item)).toList();
+    } catch (e) {
+      print('Error loading coupons: $e');
+      return [];
+    }
+  }
+
+  static Future<void> clearCoupons() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_couponsKey);
+  }
 
   // Save all memories to local storage
   static Future<void> saveMemories(List<Memory> memories) async {
